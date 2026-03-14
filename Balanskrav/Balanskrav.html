@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finansiellt utrymme 2027–2031 | En mindre svensk kommun</title>
+
+  <!--
+    ============================================================
+    PROGRAMBESKRIVNING
+    Skapare   : Kent Lundgren, www.kentlundgren.se
+    Syfte     : Visualisera sambandet mellan balanskravsresultat i
+                procent och finansiellt utrymme för drift respektive
+                investeringar 2027–2031 i en mindre svensk kommun
+                med vikande befolkningsunderlag,
+                samt ett exempel på kultur- och fritidsnämndens
+                investeringsutrymme ("Exempel på kultur och
+                fritidsfrågor i en svensk kommun").
+    Underlag  : En mindre svensk kommuns ekonomiska underlag
+                (budgetberedning 2026).
+    ============================================================
+  -->
+
+  <!-- Chart.js via CDN (fungerar online, t.ex. GitHub Pages) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Google Fonts via webben: Playfair Display + Source Serif 4 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Serif+4:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ======================================================
+       CSS-VARIABLER – centralt färgschema och typografi
+       ====================================================== */
+    :root {
+      --navy:        #002D5B;
+      --blue:        #005A9E;
+      --blue-mid:    #2A78C0;
+      --blue-light:  #E4EEF9;
+      --teal:        #007C91;
+      --gold:        #B87B10;
+      --gold-bg:     #FEF6E4;
+      --green:       #1B5E20;
+      --green-bg:    #E8F5E9;
+      --red:         #B71C1C;
+      --red-bg:      #FFEBEE;
+      --orange:      #D84315;
+      --orange-bg:   #FFF3E0;
+      --grey-bg:     #F2F5F8;
+      --grey-line:   #D8DDE4;
+      --text-dark:   #12203A;
+      --text-mid:    #4A5568;
+      --text-light:  #718096;
+      --white:       #FFFFFF;
+      --shadow-sm:   0 1px 6px rgba(0,45,91,.08);
+      --shadow-md:   0 3px 16px rgba(0,45,91,.12);
+    }
+
+    /* ======================================================
+       GLOBAL RESET OCH TYPOGRAFI
+       ====================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Source Serif 4', Georgia, serif;
+      background: var(--grey-bg);
+      color: var(--text-dark);
+      line-height: 1.75;
+      font-size: 16px;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+
+    a { color: var(--blue); }
+
+    /* ======================================================
+       HERO – toppsektion med blå bakgrund
+       ====================================================== */
+    .hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #004B8C 55%, #0069BD 100%);
+      color: var(--white);
+      padding: 64px 24px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Dekorativa geometriska linjer i bakgrunden */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        -55deg,
+        transparent,
+        transparent 40px,
+        rgba(255,255,255,.025) 40px,
+        rgba(255,255,255,.025) 41px
+      );
+    }
+    .hero__inner { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; }
+    .hero__kicker {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 20px;
+      padding: 4px 16px;
+      font-size: .78rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.9rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .hero__subtitle {
+      font-size: 1.05rem;
+      opacity: .82;
+      max-width: 640px;
+      margin: 0 auto 20px;
+    }
+    .hero__meta {
+      font-size: .8rem;
+      opacity: .55;
+    }
+
+    /* ======================================================
+       STICKY INDIKATOR – visas när man scrollar ned
+       ====================================================== */
+    #sticky-bar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: var(--white);
+      border-bottom: 2px solid var(--blue);
+      box-shadow: var(--shadow-md);
+      padding: 8px 0;
+      display: none; /* visas via JS efter att man scrollat förbi hero */
+    }
+    .sticky-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .sticky-label { font-size: .78rem; color: var(--text-light); text-transform: uppercase; letter-spacing: .5px; }
+    #sticky-pct-display {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--blue);
+    }
+    .sticky-summary {
+      font-size: .85rem;
+      color: var(--text-mid);
+    }
+    .sticky-summary strong { color: var(--text-dark); }
+
+    /* ======================================================
+       LAYOUT-HJÄLPKLASSER
+       ====================================================== */
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    section { padding: 56px 0; }
+    .sec-title {
+      font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .sec-sub {
+      font-size: 1rem;
+      color: var(--text-mid);
+      margin-bottom: 32px;
+      max-width: 760px;
+    }
+
+    /* Rutnät för kolumner */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
+    /* ======================================================
+       KORTkomponent – vit bakgrund med skugga
+       ====================================================== */
+    .card {
+      background: var(--white);
+      border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+      padding: 28px;
+    }
+    .card__title {
+      font-size: 1.05rem;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+
+    /* ======================================================
+       NYCKELTAL-KORT (metrics)
+       ====================================================== */
+    .metric {
+      background: var(--white);
+      border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+      padding: 22px 24px;
+      border-top: 4px solid var(--blue);
+    }
+    .metric.green  { border-top-color: #43A047; }
+    .metric.gold   { border-top-color: var(--gold); }
+    .metric.red    { border-top-color: var(--red); }
+    .metric.teal   { border-top-color: var(--teal); }
+    .metric__label {
+      font-family: 'Source Serif 4', serif;
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--text-light);
+      margin-bottom: 6px;
+    }
+    .metric__value {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1;
+    }
+    .metric__value.pos { color: var(--green); }
+    .metric__value.neg { color: var(--red); }
+    .metric__value.warn { color: var(--orange); }
+    .metric__sub {
+      font-size: .82rem;
+      color: var(--text-light);
+      margin-top: 5px;
+    }
+
+    /* ======================================================
+       SLIDER-SEKTION – interaktiv procentväljare
+       ====================================================== */
+    .slider-card {
+      background: linear-gradient(135deg, var(--navy) 0%, #004F8E 100%);
+      color: var(--white);
+      border-radius: 12px;
+      padding: 36px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-md);
+    }
+    .slider-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 6px;
+      opacity: .9;
+    }
+    .slider-card p {
+      font-size: .9rem;
+      opacity: .7;
+      margin-bottom: 24px;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .slider-wrap { flex: 1; min-width: 260px; }
+
+    /* Anpassad range-slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,.25);
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--white);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.35);
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--white);
+      cursor: pointer;
+      border: none;
+    }
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: .75rem;
+      opacity: .6;
+      margin-top: 4px;
+    }
+    .pct-readout {
+      text-align: center;
+      min-width: 120px;
+    }
+    .pct-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 4rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .pct-sign {
+      font-size: 2rem;
+      opacity: .7;
+    }
+    .pct-label {
+      font-size: .75rem;
+      opacity: .6;
+      letter-spacing: .5px;
+    }
+
+    /* Förklaringsrad under slider */
+    .slider-explainer {
+      background: rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: .88rem;
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+    .slider-explainer strong { color: #FFD966; }
+
+    /* ======================================================
+       KONFLIKT-VISUALISERING (se-saw / balansvisualisering)
+       ====================================================== */
+    .tradeoff-box {
+      background: var(--white);
+      border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .tradeoff-box h3 {
+      font-size: 1.1rem;
+      color: var(--navy);
+      margin-bottom: 18px;
+    }
+    .tradeoff-row {
+      display: grid;
+      grid-template-columns: 1fr 60px 1fr;
+      gap: 0;
+      align-items: center;
+    }
+    .tradeoff-side {
+      border-radius: 8px;
+      padding: 22px 18px;
+      text-align: center;
+    }
+    .tradeoff-side.drift-side {
+      background: var(--green-bg);
+      border: 2px solid #66BB6A;
+    }
+    .tradeoff-side.invest-side {
+      background: var(--blue-light);
+      border: 2px solid var(--blue-mid);
+    }
+    .tradeoff-side.neg {
+      background: var(--red-bg);
+      border-color: #EF9A9A;
+    }
+    .tradeoff-icon { font-size: 2rem; margin-bottom: 4px; }
+    .tradeoff-side .label {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--text-light);
+      margin-bottom: 6px;
+    }
+    .tradeoff-side .amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .tradeoff-side .amount.pos { color: var(--green); }
+    .tradeoff-side .amount.neg { color: var(--red); }
+    .tradeoff-side .sub { font-size: .8rem; color: var(--text-mid); margin-top: 4px; }
+    .tradeoff-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+    }
+
+    /* ======================================================
+       FORMELJOBB
+       ====================================================== */
+    .formula-strip {
+      background: var(--navy);
+      color: var(--white);
+      border-radius: 10px;
+      padding: 28px 32px;
+      margin: 28px 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      align-items: center;
+      text-align: center;
+    }
+    .formula-strip .f-part {
+      padding: 10px;
+    }
+    .formula-strip .f-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #FFD966;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .formula-strip .f-name {
+      font-size: .78rem;
+      opacity: .75;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .formula-strip .f-op {
+      font-size: 2.5rem;
+      opacity: .5;
+      font-weight: 300;
+    }
+
+    /* ======================================================
+       INFORMATIONSRUTOR
+       ====================================================== */
+    .info-box {
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: .92rem;
+      line-height: 1.65;
+    }
+    .info-box.blue   { background: var(--blue-light);  border-left: 4px solid var(--blue); }
+    .info-box.green  { background: var(--green-bg);    border-left: 4px solid #43A047; }
+    .info-box.gold   { background: var(--gold-bg);     border-left: 4px solid var(--gold); }
+    .info-box.red    { background: var(--red-bg);      border-left: 4px solid var(--red); }
+    .info-box.orange { background: var(--orange-bg);   border-left: 4px solid var(--orange); }
+    .info-box strong { font-weight: 600; }
+
+    /* ======================================================
+       TABELLER
+       ====================================================== */
+    .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    th {
+      background: var(--navy);
+      color: var(--white);
+      padding: 10px 14px;
+      text-align: right;
+      font-family: 'Source Serif 4', serif;
+      font-weight: 600;
+    }
+    th:first-child { text-align: left; }
+    td {
+      padding: 9px 14px;
+      text-align: right;
+      border-bottom: 1px solid var(--grey-line);
+    }
+    td:first-child { text-align: left; font-weight: 500; }
+    tr:nth-child(even) td { background: #F8FAFC; }
+    tr.total td { background: var(--blue-light) !important; font-weight: 700; border-top: 2px solid var(--blue); }
+    .td-pos { color: var(--green); font-weight: 600; }
+    .td-neg { color: var(--red); font-weight: 600; }
+    .td-warn { color: var(--orange); font-weight: 600; }
+
+    /* ======================================================
+       DIAGRAM-CONTAINRAR
+       ====================================================== */
+    .chart-wrap {
+      position: relative;
+      height: 380px;
+      margin: 20px 0;
+    }
+    .chart-wrap.sm { height: 260px; }
+
+    /* ======================================================
+       DIVIDER-LINJE
+       ====================================================== */
+    hr.section-hr {
+      border: none;
+      height: 3px;
+      background: linear-gradient(to right, var(--navy), var(--blue), transparent);
+      margin: 0;
+    }
+
+    /* ======================================================
+       DEMOGRAFISEKTIONENS ÅLDERSGRUPPS-BARER
+       ====================================================== */
+    .age-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0;
+    }
+    .age-label {
+      width: 100px;
+      font-size: .85rem;
+      color: var(--text-mid);
+      flex-shrink: 0;
+    }
+    .age-bar-track {
+      flex: 1;
+      height: 28px;
+      background: var(--grey-line);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .age-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--white);
+      white-space: nowrap;
+      transition: width .6s ease;
+    }
+    .age-bar-fill.neg { background: var(--red); }
+    .age-bar-fill.pos { background: var(--green); }
+    .age-change {
+      width: 70px;
+      text-align: right;
+      font-size: .88rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .age-change.pos { color: var(--green); }
+    .age-change.neg { color: var(--red); }
+
+    /* ======================================================
+       KOF-SEKTION
+       ====================================================== */
+    .kof-badge {
+      display: inline-block;
+      background: var(--teal);
+      color: var(--white);
+      border-radius: 6px;
+      padding: 3px 12px;
+      font-size: .72rem;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    /* ======================================================
+       JÄMFÖRELSETABELL ANDRA KOMMUNER
+       ====================================================== */
+    .compare-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--grey-line);
+    }
+    .compare-name { flex: 0 0 180px; font-weight: 600; font-size: .9rem; }
+    .compare-bar-wrap { flex: 1; height: 20px; background: var(--grey-line); border-radius: 3px; overflow: hidden; }
+    .compare-bar { height: 100%; border-radius: 3px; background: var(--blue-mid); }
+    .compare-pct { flex: 0 0 50px; text-align: right; font-size: .88rem; font-weight: 700; color: var(--navy); }
+    .compare-row.highlight .compare-name { color: var(--blue); }
+    .compare-row.highlight .compare-bar { background: var(--navy); }
+
+    /* ======================================================
+       KÄLLFÖRTECKNING (footer)
+       ====================================================== */
+    .sources-section {
+      background: var(--navy);
+      color: rgba(255,255,255,.85);
+      padding: 56px 0;
+    }
+    .sources-section h2 { color: var(--white); margin-bottom: 24px; }
+    .sources-section ol { padding-left: 22px; }
+    .sources-section li {
+      margin-bottom: 14px;
+      font-size: .84rem;
+      line-height: 1.7;
+    }
+    .sources-section a { color: #90CAF9; }
+    .sources-section .note {
+      margin-top: 24px;
+      padding: 16px;
+      background: rgba(255,255,255,.07);
+      border-radius: 6px;
+      font-size: .82rem;
+      line-height: 1.65;
+    }
+
+    /* ======================================================
+       ANIMATIONER
+       ====================================================== */
+    .fade-update { animation: fadeUp .3s ease; }
+    @keyframes fadeUp {
+      from { opacity: .5; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ======================================================
+       RESPONSIVITET
+       ====================================================== */
+    @media (max-width: 900px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .tradeoff-row { grid-template-columns: 1fr; }
+      .tradeoff-arrow { display: none; }
+      .formula-strip { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .grid-auto { grid-template-columns: 1fr 1fr; }
+      .pct-num { font-size: 3rem; }
+      .compare-name { flex: 0 0 130px; font-size: .8rem; }
+    }
+    @media (max-width: 400px) {
+      .grid-auto { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================================================
+       HERO – sidans rubrikssektion
+       ================================================== -->
+  <header class="hero" id="page-top">
+    <div class="hero__inner">
+      <span class="hero__kicker">En mindre svensk kommun · Ekonomistyrning</span>
+      <h1>Finansiellt utrymme 2027–2031</h1>
+      <p class="hero__subtitle">
+        Interaktiv analys av sambandet mellan balanskravsresultat, driftsbudget
+        och investeringsutrymme – för hela kommunen och som ett exempel på
+        kultur- och fritidsfrågor i en svensk kommun med vikande befolkningsunderlag.
+      </p>
+      <p class="hero__meta">
+        Underlag: Ekonomisk presentation budgetunderlag 2027–2031
+        &nbsp;·&nbsp; Kommunens budget
+      </p>
+    </div>
+  </header>
+
+  <!-- Sticky-indikator som visas vid nedscrollning -->
+  <div id="sticky-bar" style="display: block;">
+    <div class="sticky-inner">
+      <span class="sticky-label">Balanskravsresultat</span>
+      <span id="sticky-pct-display">3,0 %</span>
+      <span class="sticky-summary" id="sticky-summary-text">2027: Inv.utrymme <strong>140 Mnkr</strong> · Driftutrymme <strong>+25 Mnkr</strong></span>
+    </div>
+  </div>
+
+  <!-- ==================================================
+       SEKTION 1 – BAKGRUND OCH NYCKELTAL
+       ================================================== -->
+  <section style="background: var(--white); padding-bottom: 20px;">
+    <div class="wrap">
+      <h2 class="sec-title">Vad handlar det om?</h2>
+      <p class="sec-sub">
+        Varje år måste kommunen bestämma hur stor andel av skatter och statsbidrag
+        som ska sparas ("balanskravsresultat"). Det sparade beloppet – tillsammans
+        med årets avskrivningar – avgör hur mycket som kan investeras i skolor,
+        badhus, vägar och kulturlokaler. Sänker du kravet frigörs pengar till årets
+        drift. Men det är precis de pengarna som annars hade finansierat
+        morgondagens investeringar.
+      </p>
+
+      <!-- Snabba nyckeltal -->
+      <div class="grid-auto" id="quick-metrics">
+      <div class="metric">
+        <div class="metric__label">Total driftsbudget 2027</div>
+        <div class="metric__value fade-update">1 436 Mnkr</div>
+        <div class="metric__sub">+3 % PKV jämfört med 2026</div>
+      </div>
+      <div class="metric green">
+        <div class="metric__label">Skatteint. + statsbidrag 2027</div>
+        <div class="metric__value fade-update">1 503 Mnkr</div>
+        <div class="metric__sub">Underlag för balanskravsberäkning</div>
+      </div>
+      <div class="metric gold">
+        <div class="metric__label">1 % balanskrav = (2027)</div>
+        <div class="metric__value fade-update">≈ 15 Mnkr</div>
+        <div class="metric__sub">Känslighetsfaktor per procentenhet</div>
+      </div>
+      <div class="metric red">
+        <div class="metric__label">Prognostiserat BKR 2031</div>
+        <div class="metric__value fade-update">22,7 Mnkr</div>
+        <div class="metric__sub">Utan politiska åtgärder</div>
+      </div>
+    </div>
+
+      <!-- Förklaringsruta om 1 %-enhet -->
+      <div class="info-box blue" style="margin-top: 20px;">
+        <strong>Känslighetsfakta (2027):</strong>
+        1 % förändring av balanskravsresultatet motsvarar <strong>ca 15 Mnkr</strong>.
+        Det innebär att varje procentenhet du förändrar kravet direkt
+        påverkar hur mycket pengar som finns tillgängliga – antingen för
+        verksamhetens löpande kostnader <em>eller</em> för framtida investeringar.
+        (Kommunens budgetunderlag, 2026)
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-hr">
+
+  <!-- ==================================================
+       SEKTION 2 – DEMOGRAFIN DRIVER KOSTNADERNA
+       ================================================== -->
+  <section>
+    <div class="wrap">
+      <h2 class="sec-title">Varför ökar kostnaderna snabbare än intäkterna?</h2>
+      <p class="sec-sub">
+        I underlaget visas att verksamhetens nettokostnader växer snabbare än
+        skatteintäkterna. Det är inte en slump – det är ett demografiskt och
+        strukturellt fenomen.
+      </p>
+
+      <div class="grid-2">
+        <!-- Vänster: åldersförändring -->
+        <div class="card">
+          <h3 class="card__title">Befolkningsförändring per åldersgrupp 2026–2035</h3>
+          <p style="font-size:.88rem; color:var(--text-mid); margin-bottom:18px;">
+            Nettobytesförändringar under tioårsperioden. En kraftig ökning av
+            gruppen 85+ år – kommunens mest kostnadsintensiva grupp.
+          </p>
+
+          <!-- Visuella barer för åldersgrupperna -->
+          <div class="age-bar-row">
+            <span class="age-label">0–19 år</span>
+            <div class="age-bar-track">
+              <div class="age-bar-fill neg" style="width:31%;">−327</div>
+            </div>
+            <span class="age-change neg">−327</span>
+          </div>
+          <div class="age-bar-row">
+            <span class="age-label">20–64 år</span>
+            <div class="age-bar-track">
+              <div class="age-bar-fill neg" style="width:71%;">−751</div>
+            </div>
+            <span class="age-change neg">−751</span>
+          </div>
+          <div class="age-bar-row">
+            <span class="age-label">65–84 år</span>
+            <div class="age-bar-track">
+              <div class="age-bar-fill neg" style="width:7%;">−74</div>
+            </div>
+            <span class="age-change neg">−74</span>
+          </div>
+          <div class="age-bar-row">
+            <span class="age-label">85–100+ år</span>
+            <div class="age-bar-track">
+              <div class="age-bar-fill pos" style="width:50%;">+528</div>
+            </div>
+            <span class="age-change pos">+528</span>
+          </div>
+          <div class="age-bar-row" style="border-top:1px solid var(--grey-line); padding-top:10px; margin-top:6px;">
+            <span class="age-label" style="font-weight:700;">Summa</span>
+            <div style="flex:1;"></div>
+            <span class="age-change neg" style="font-size:1rem;">−624</span>
+          </div>
+          <p class="footnote" style="margin-top:12px;">
+            Källa: En mindre svensk kommun (2026). Ekonomisk presentation budgetunderlag.
+          </p>
+        </div>
+
+        <!-- Höger: förklarande text -->
+        <div>
+          <div class="info-box gold">
+            <strong>Kostnadsökning från äldre:</strong>
+            Gruppen 85+ år ökar med 528 personer under tio år. Genomsnittlig
+            kommunal kostnad för hemtjänst och särskilt boende för en person
+            85+ år kan överstiga 250 000–400 000 kr/år. Det innebär att
+            äldreomsorgens kostnader kan öka med uppåt 130–200 Mnkr under
+            perioden, allt annat lika.
+          </div>
+
+          <div class="info-box red" style="margin-top:12px;">
+            <strong>Minskad skattebas:</strong>
+            751 färre personer i arbetsför ålder (20–64 år) innebär lägre
+            skatteintäkter. Varje 100 invånare motsvarar ca 7,3 Mnkr i
+            skatteintäkter per år (kommunens budgetunderlag, 2026).
+            751 färre skattebetalare kan motsvara ca 55 Mnkr/år i lägre
+            skatteintäkter. (Kommunens budgetunderlag, 2026)
+          </div>
+
+          <div class="info-box blue" style="margin-top:12px;">
+            <strong>Pris- och lönekompensation (PKV):</strong>
+            Verksamhetens kostnader räknas upp med PKV varje år. För
+            perioden 2027–2031 antas PKV vara ca 3,2 % per år. Eftersom
+            intäktstillväxten begränsas av den minskande befolkningen,
+            ökar klyftan mellan kostnader och intäkter successivt.
+          </div>
+
+          <div class="info-box orange" style="margin-top:12px;">
+            <strong>Slutsats:</strong>
+            Det är troligt, ja nästan oundvikligt, att kostnaderna i
+            kommunen ökar snabbare än intäkterna under 2027–2031, givet
+            demografiska trender och PKV-antaganden. Det är inte ett
+            politiskt val – det är en matematisk konsekvens av demografin.
+          </div>
+        </div>
+      </div>
+
+      <!-- Driftsbudget-tillväxt -->
+      <div class="formula-strip" style="margin-top:28px;">
+        <div class="f-part">
+          <span class="f-val">1 395 Mnkr</span>
+          <span class="f-name">Driftsbudget 2026</span>
+        </div>
+        <div class="f-op">+</div>
+        <div class="f-part">
+          <span class="f-val">40,7 Mnkr</span>
+          <span class="f-name">PKV-uppräkning 3 % (2027)</span>
+        </div>
+        <div class="f-op">=</div>
+        <div class="f-part">
+          <span class="f-val">1 436 Mnkr</span>
+          <span class="f-name">Driftsbudget 2027</span>
+        </div>
+      </div>
+      <p class="footnote">
+        Källa: En mindre svensk kommun (2026). Ekonomisk presentation budgetunderlag.
+        Totala driftsbudgeten 2026: 1 395 Mnkr; PKV-antagande 3 %
+        per förvaltning; driftsbudget 2027 beräknad till 1 436 Mnkr.
+      </p>
+    </div>
+  </section>
+
+  <hr class="section-hr">
+
+  <!-- ==================================================
+       SEKTION 3 – PEDAGOGISK FÖRKLARING FÖR LEKMANNEN
+       ================================================== -->
+  <section style="background: var(--white);">
+    <div class="wrap">
+      <h2 class="sec-title">Balanskravsresultatet förklarat för alla</h2>
+      <p class="sec-sub">
+        Många upplever att kommunala budgettermer är svårförståeliga. Här förklaras
+        sambandet steg för steg.
+      </p>
+
+      <div class="grid-3">
+        <!-- Kort 1 -->
+        <div class="card" style="border-top: 4px solid var(--blue);">
+          <div style="font-size:2rem; margin-bottom:10px;">🏦</div>
+          <h3 class="card__title">Vad är balanskravsresultatet?</h3>
+          <p style="font-size:.9rem; color:var(--text-mid);">
+            Det är det "överskott" kommunen beslutat att spara varje år, mätt
+            som procent av skatteintäkter och statsbidrag. Det är det belopp
+            som <em>inte</em> används till verksamheten. Minimikravet i lag
+            är 0 % – men att bara uppfylla minimiket innebär att inga pengar
+            sparas till investeringar.
+          </p>
+        </div>
+        <!-- Kort 2 -->
+        <div class="card" style="border-top: 4px solid #43A047;">
+          <div style="font-size:2rem; margin-bottom:10px;">🔧</div>
+          <h3 class="card__title">Varför behövs investeringar?</h3>
+          <p style="font-size:.9rem; color:var(--text-mid);">
+            Skolor, badhus, idrottsplatser och kulturlokaler åldras och
+            behöver underhållas eller byggas om. Utan investeringar försämras
+            kommunens service och lokaler successivt. Investeringar finansieras
+            av årets balanskravsresultat <em>plus</em> avskrivningar.
+          </p>
+        </div>
+        <!-- Kort 3 -->
+        <div class="card" style="border-top: 4px solid var(--orange);">
+          <div style="font-size:2rem; margin-bottom:10px;">⚖️</div>
+          <h3 class="card__title">Konflikten – nu eller framtiden</h3>
+          <p style="font-size:.9rem; color:var(--text-mid);">
+            Varje krona som sätts i balanskravsresultatet (sparas) är en
+            krona <em>mindre</em> till årets verksamhet. Men samma krona
+            <em>möjliggör</em> framtida investeringar. Det är en ständig
+            balansgång: lägre krav ger mer till verksamheten nu, men
+            mindre att investera i morgon.
+          </p>
+        </div>
+      </div>
+
+      <!-- Formeln för investeringsutrymme -->
+      <div class="formula-strip" style="margin-top:28px;">
+        <div class="f-part">
+          <span class="f-val">Balanskravsresultat</span>
+          <span class="f-name">Det kommunen "sparar" (= balanskrav% × intäkter)</span>
+        </div>
+        <div class="f-op">+</div>
+        <div class="f-part">
+          <span class="f-val">Avskrivningar</span>
+          <span class="f-name">Bokföringskostnad för befintliga anläggningstillgångar</span>
+        </div>
+        <div class="f-op">=</div>
+        <div class="f-part">
+          <span class="f-val">Investeringsutrymme</span>
+          <span class="f-name">Max kapital till skattefinansierade investeringar</span>
+        </div>
+      </div>
+      <p class="footnote" style="text-align:center;">
+        Källa: En mindre svensk kommun (2026). Ekonomisk presentation budgetunderlag.
+        VA-investeringar lånefinansieras separat.
+      </p>
+    </div>
+  </section>
+
+  <hr class="section-hr">
+
+  <!-- ==================================================
+       SEKTION 4 – INTERAKTIV KALKYLATOR (HUVUD-TOOL)
+       ================================================== -->
+  <section id="kalkylator">
+    <div class="wrap">
+      <h2 class="sec-title">Interaktiv kalkylator – välj balanskravsresultat</h2>
+      <p class="sec-sub">
+        Flytta reglaget och se direkt hur finansiellt utrymme för drift och
+        investeringsutrymme förändras för hela planperioden 2027–2031.
+        Röda värden indikerar att driftskostnader <em>måste sänkas</em> för
+        att uppnå den valda nivån.
+      </p>
+
+      <!-- SLIDER-KORT -->
+      <div class="slider-card">
+        <h3>Ange balanskravsresultat i procent</h3>
+        <p>Reglaget ändrar kravet för <em>alla år 2027–2031</em> simultant.</p>
+        <div class="slider-row">
+          <div class="slider-wrap">
+            <input type="range" id="bkr-slider" min="1.0" max="5.0" step="0.5" value="3.0">
+            <div class="slider-labels">
+              <span>1,0 % (minimalt krav)</span>
+              <span>5,0 % (ambitiöst mål)</span>
+            </div>
+          </div>
+          <div class="pct-readout">
+            <div>
+              <span class="pct-num" id="pct-display">3,0</span><span class="pct-sign">%</span>
+            </div>
+            <div class="pct-label">Balanskravsresultat</div>
+          </div>
+        </div>
+
+        <!-- Dynamisk förklaringstext baserat på valt % -->
+        <div class="slider-explainer" id="slider-explainer">
+        Med <strong>3.0 %</strong> balanskrav finns det år 2027
+        ett finansiellt utrymme om <strong>24,9 Mnkr</strong>
+        som KAN fördelas till nämnderna utöver nuvarande basbudget.
+        Investeringsutrymmet 2027 uppgår till <strong>139,6 Mnkr</strong>.
+        Varje ytterligare %-enhet sänkning frigör ca 2 Mnkr
+        till drift men minskar investeringsutrymmet med samma belopp.
+      </div>
+      </div>
+
+      <!-- NYCKELTAL FÖR VALT % (2027) -->
+      <h3 style="font-size:1rem; color:var(--text-mid); margin-bottom:12px; text-transform:uppercase; letter-spacing:.5px;">
+        Snabb överblick – År 2027
+      </h3>
+      <div class="grid-auto" id="year-metrics">
+      <div class="metric green">
+        <div class="metric__label">Finansiellt utrymme drift 2027</div>
+        <div class="metric__value pos fade-update">+24,9 Mnkr</div>
+        <div class="metric__sub">
+          Extra utrymme att fördela till nämnderna
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric__label">Balanskravsresultat 2027 (tkr)</div>
+        <div class="metric__value fade-update">45,1 Mnkr</div>
+        <div class="metric__sub">3.0 % × 1 502,6 Mnkr</div>
+      </div>
+      <div class="metric teal">
+        <div class="metric__label">Investeringsutrymme 2027</div>
+        <div class="metric__value fade-update">139,6 Mnkr</div>
+        <div class="metric__sub">BKR + avskrivningar (94,5 Mnkr)</div>
+      </div>
+      <div class="metric gold">
+        <div class="metric__label">Avskrivningar 2027 (fast)</div>
+        <div class="metric__value fade-update">94,5 Mnkr</div>
+        <div class="metric__sub">Oberoende av balanskravsnivå</div>
+      </div>
+    </div>
+
+      <!-- HUVUD-DIAGRAM: Driftutrymme och investeringsutrymme 2027–2031 -->
+      <div class="card" style="margin-top:24px;">
+        <h3 class="card__title">
+          Finansiellt utrymme drift och investeringsutrymme 2027–2031
+          <span style="font-size:.8rem; font-weight:400; color:var(--text-light);">
+            (vid valt balanskravsresultat %)
+          </span>
+        </h3>
+        <p style="font-size:.85rem; color:var(--text-mid); margin-bottom:4px;">
+          <span style="color:var(--green); font-weight:600;">■</span> Finansiellt utrymme drift (Mnkr) &nbsp;&nbsp;
+          <span style="color:var(--blue-mid); font-weight:600;">■</span> Investeringsutrymme (Mnkr)
+          &nbsp;&nbsp;
+          <span style="color:var(--red); font-weight:600;">■</span> Negativt driftutrymme = krav på besparingar
+        </p>
+        <div class="chart-wrap">
+          <canvas id="main-chart" width="1096" height="380" style="display: block; box-sizing: border-box; height: 380px; width: 1096px;"></canvas>
+        </div>
+        <p class="footnote">
+          Positivt driftutrymme = det finns extra pengar att fördela till nämnderna utöver basprognosen.
+          Negativt driftutrymme = drift måste minskas för att uppnå balanskravsmålet.
+          Investeringsutrymme = balanskrav (tkr) + avskrivningar.
+        </p>
+      </div>
+
+      <!-- DETALJERAT INVESTERINGSUTRYMME-DIAGRAM -->
+      <div class="card" style="margin-top:20px;">
+        <h3 class="card__title">Investeringsutrymme 2027–2031 fördelat på komponenter</h3>
+        <p style="font-size:.85rem; color:var(--text-mid); margin-bottom:4px;">
+          <span style="color:#1565C0; font-weight:600;">■</span> Avskrivningar (fast del) &nbsp;&nbsp;
+          <span style="color:#0097A7; font-weight:600;">■</span> Balanskravsresultat (varierar med %)
+        </p>
+        <div class="chart-wrap sm">
+          <canvas id="invest-chart" width="1096" height="260" style="display: block; box-sizing: border-box; height: 260px; width: 1096px;"></canvas>
+        </div>
+      </div>
+
+      <!-- FULLTABELL FÖR ALLA ÅR -->
+      <div class="card" style="margin-top:20px;">
+        <h3 class="card__title">Fullständig tabell – alla år 2027–2031 (tkr)</h3>
+        <div class="tbl-wrap">
+          <table id="main-table">
+      <thead>
+        <tr>
+          <th>Post (tkr)</th>
+          <th>2027</th><th>2028</th><th>2029</th><th>2030</th><th>2031</th>
+          <th>Summa</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Skatteintäkter</td>
+          <td>1&nbsp;044&nbsp;307</td><td>1&nbsp;078&nbsp;039</td><td>1&nbsp;121&nbsp;089</td><td>1&nbsp;160&nbsp;348</td><td>1&nbsp;197&nbsp;155</td>
+          <td>5&nbsp;600&nbsp;938</td>
+        </tr>
+        <tr>
+          <td>Generella statsbidrag</td>
+          <td>458&nbsp;259</td><td>468&nbsp;237</td><td>467&nbsp;035</td><td>470&nbsp;302</td><td>474&nbsp;400</td>
+          <td>2&nbsp;338&nbsp;233</td>
+        </tr>
+        <tr class="total">
+          <td>Totala intäkter (skatt+bidrag)</td>
+          <td>1&nbsp;502&nbsp;566</td><td>1&nbsp;546&nbsp;276</td><td>1&nbsp;588&nbsp;124</td><td>1&nbsp;630&nbsp;650</td><td>1&nbsp;671&nbsp;555</td>
+          <td>7&nbsp;939&nbsp;171</td>
+        </tr>
+        <tr>
+          <td>Prognostiserat BKR</td>
+          <td>70&nbsp;007</td><td>62&nbsp;822</td><td>47&nbsp;746</td><td>39&nbsp;635</td><td>22&nbsp;720</td>
+          <td>242&nbsp;930</td>
+        </tr>
+        <tr>
+          <td>Balanskrav vid 3.0 % (tkr)</td>
+          <td>45&nbsp;077</td><td>46&nbsp;388</td><td>47&nbsp;644</td><td>48&nbsp;920</td><td>50&nbsp;147</td>
+          <td>238&nbsp;175</td>
+        </tr>
+        <tr>
+          <td>Avskrivningar</td>
+          <td>94&nbsp;525</td><td>100&nbsp;515</td><td>109&nbsp;366</td><td>116&nbsp;191</td><td>116&nbsp;191</td>
+          <td>536&nbsp;788</td>
+        </tr>
+        <tr class="total">
+          <td><strong>Investeringsutrymme</strong></td>
+          <td><strong>139&nbsp;602</strong></td><td><strong>146&nbsp;903</strong></td><td><strong>157&nbsp;010</strong></td><td><strong>165&nbsp;111</strong></td><td><strong>166&nbsp;338</strong></td>
+          <td><strong>774&nbsp;963</strong></td>
+        </tr>
+        <tr class="total">
+          <td><strong>Finansiellt utrymme drift</strong></td>
+          <td><strong class="td-pos">+24&nbsp;930</strong></td><td><strong class="td-pos">+16&nbsp;434</strong></td><td><strong class="td-pos">+102</strong></td><td><strong class="td-neg">−9&nbsp;284</strong></td><td><strong class="td-neg">−27&nbsp;427</strong></td>
+          <td>
+            <strong class="td-pos">
+              +4&nbsp;755
+            </strong>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+        </div>
+        <p class="footnote">
+          Alla belopp i tusenkronor (tkr). Källa: En mindre svensk kommun (2026).
+          Ekonomisk presentation budgetunderlag.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-hr">
+
+  <!-- ==================================================
+       SEKTION 5 – TRADEOFF-VISUALISERING
+       ================================================== -->
+  <section style="background: var(--white);">
+    <div class="wrap">
+      <h2 class="sec-title">Konflikten: Pengar nu kontra investeringar i framtiden</h2>
+      <p class="sec-sub">
+        Den grundläggande spänningen i kommunal ekonomi: varje krona till årets
+        verksamhet är en krona som inte kan investeras i morgondagens infrastruktur.
+        Nedan visas detta konkret för år 2027.
+      </p>
+
+      <div class="tradeoff-box">
+        <h3>Vad händer när balanskravsresultatet ändras med 1 procentenhet?</h3>
+
+        <div class="grid-2" style="margin-bottom:24px;">
+          <!-- Scenario: sänkning med 1 %-enhet -->
+          <div style="background:var(--green-bg); border:2px solid #81C784; border-radius:10px; padding:22px;">
+            <div style="font-size:.8rem; text-transform:uppercase; letter-spacing:.5px; color:var(--green); margin-bottom:8px; font-weight:700;">
+              Sänks kravet med 1 %-enhet (t.ex. 3→2%)
+            </div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--green); font-family:'Playfair Display',serif;">
+              + 15 Mnkr till drift 2027
+            </div>
+            <p style="font-size:.87rem; color:var(--text-mid); margin-top:8px;">
+              Nämnderna får mer pengar till personal, underhåll och verksamhet
+              <em>i år</em>.
+            </p>
+            <div style="font-size:.85rem; color:var(--orange); margin-top:10px; font-weight:600;">
+              ⚠ Men investeringsutrymmet minskar med 15 Mnkr (samma år)
+            </div>
+          </div>
+
+          <!-- Scenario: höjning med 1 %-enhet -->
+          <div style="background:var(--blue-light); border:2px solid var(--blue-mid); border-radius:10px; padding:22px;">
+            <div style="font-size:.8rem; text-transform:uppercase; letter-spacing:.5px; color:var(--blue); margin-bottom:8px; font-weight:700;">
+              Höjs kravet med 1 %-enhet (t.ex. 3→4%)
+            </div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--blue); font-family:'Playfair Display',serif;">
+              + 15 Mnkr till investeringar
+            </div>
+            <p style="font-size:.87rem; color:var(--text-mid); margin-top:8px;">
+              Kommunen kan investera mer i lokaler, vägar och anläggningar
+              <em>nästa period</em>.
+            </p>
+            <div style="font-size:.85rem; color:var(--orange); margin-top:10px; font-weight:600;">
+              ⚠ Men 15 Mnkr mindre att fördela till nämndernas drift i år
+            </div>
+          </div>
+        </div>
+
+        <!-- Tradeoff-rad för valt år -->
+        <h3 style="font-size:1rem; margin-bottom:14px; color:var(--text-mid);">
+          Konsekvens för år 2027 vid <em>valt</em> balanskravsresultat
+        </h3>
+        <div class="tradeoff-row">
+          <div class="tradeoff-side drift-side fade-update" id="tradeoff-drift">
+      <div class="tradeoff-icon">📋</div>
+      <div class="label">Finansiellt utrymme drift 2027</div>
+      <div class="amount pos">+24,9 Mnkr</div>
+      <div class="sub">
+        Extra att ge till verksamheten
+      </div>
+    </div>
+          <div class="tradeoff-arrow">⇄</div>
+          <div class="tradeoff-side invest-side fade-update" id="tradeoff-invest">
+      <div class="tradeoff-icon">🏗️</div>
+      <div class="label">Investeringsutrymme 2027</div>
+      <div class="amount">139,6 Mnkr</div>
+      <div class="sub">BKR + avskrivningar (94,5 Mnkr)</div>
+    </div>
+        </div>
+
+        <!-- 5-årsöversikt -->
+        <div style="margin-top:24px; padding:18px; background:var(--grey-bg); border-radius:8px;">
+          <h3 style="font-size:1rem; margin-bottom:12px;">
+            Ackumulerat investeringsutrymme 2027–2031 (totalt 5 år)
+          </h3>
+          <div class="grid-auto" id="fiveyear-metrics">
+      <div class="metric teal">
+        <div class="metric__label">Totalt inv.utrymme 2027–2031</div>
+        <div class="metric__value fade-update">775 Mnkr</div>
+        <div class="metric__sub">Balanskrav + avskrivningar, 5 år</div>
+      </div>
+      <div class="metric green">
+        <div class="metric__label">Tot. driftutrymme 2027–2031</div>
+        <div class="metric__value pos fade-update">
+          +5 Mnkr
+        </div>
+        <div class="metric__sub">Ackumulerat utrymme/besparing</div>
+      </div>
+      <div class="metric gold">
+        <div class="metric__label">Skillnad mot 2 %-alternativet</div>
+        <div class="metric__value pos fade-update">
+          +79 Mnkr
+        </div>
+        <div class="metric__sub">mer/mindre investering vs 2 %</div>
+      </div>
+      <div class="metric gold">
+        <div class="metric__label">Skillnad mot 4 %-alternativet</div>
+        <div class="metric__value neg fade-update">
+          −79 Mnkr
+        </div>
+        <div class="metric__sub">mer/mindre investering vs 4 %</div>
+      </div>
+    </div>
+        </div>
+
+        <!-- Jämförelse 2% vs 4% -->
+        <div class="info-box orange" style="margin-top:16px;">
+          <strong>Exempel på femårsskillnad:</strong>
+          Väljer kommunen 4 % framför 2 % som balanskravsmål ger det
+          totalt <strong>ca 158 Mnkr mer</strong> i investeringsutrymme
+          under 2027–2031 (854 Mnkr vs 696 Mnkr). Det är ungefär vad det
+          kostar att bygga ett nytt badhus eller renovera samtliga
+          kommunens skolor. Kostnaden är att nämndernas driftsbudgetar
+          sammantaget minskar med motsvarande belopp under perioden.
+        </div>
+      </div>
+
+      <!-- Diagram: 3 scenarior av investeringsutrymme 2027-2031 -->
+      <div class="card" style="margin-top:20px;">
+        <h3 class="card__title">
+          Investeringsutrymme 2027–2031 vid 2 %, 3 % och 4 % balanskravsresultat
+        </h3>
+        <div class="chart-wrap sm">
+          <canvas id="scenario-chart" width="1096" height="260" style="display: block; box-sizing: border-box; height: 260px; width: 1096px;"></canvas>
+        </div>
+        <p class="footnote">
+          Skillnaden i linjenivå representerar den direkta konsekvensen
+          av politiska mål för balanskravsresultatet – mer sparat = mer
+          att investera för.
+        </p>
+      </div>
+
+      <!-- Diagram: Prognostiserat BKR vs krav -->
+      <div class="card" style="margin-top:20px;">
+        <h3 class="card__title">
+          Prognostiserat balanskravsresultat jämfört med krav vid 2 %, 3 % och 4 %
+        </h3>
+        <p style="font-size:.85rem; color:var(--text-mid); margin-bottom:6px;">
+          Den grå linjen visar det <em>faktiska</em> prognosen (vad
+          kommunen beräknas uppnå med nuvarande kostnads- och
+          intäktsutveckling). Ligger den under kravet måste drift skäras ned.
+        </p>
+        <div class="chart-wrap sm">
+          <canvas id="bkr-chart" width="1096" height="260" style="display: block; box-sizing: border-box; height: 260px; width: 1096px;"></canvas>
+        </div>
+        <div class="info-box red" style="margin-top:12px;">
+          <strong>Varningssignal:</strong>
+          Det prognostiserade balanskravsresultatet sjunker från 70 Mnkr
+          (2027) till drygt 22 Mnkr (2031). Det innebär att ett krav på
+          4 % inte kan uppnås 2030–2031 <em>utan besparingar</em> i
+          driftbudgeten. Vid 3 % uppstår underskott mot kravet från 2030.
+          Endast vid 2 % håller prognosen hela perioden – men knappt 2031.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-hr">
+
+  <!-- ==================================================
+       SEKTION 6 – KOF INVESTERINGSBUDGET
+       ================================================== -->
+  <section>
+    <div class="wrap">
+      <span class="kof-badge">Kultur &amp; Fritid – Exempel</span>
+      <h2 class="sec-title">Exempel på kultur- och fritidsfrågor i en svensk kommun</h2>
+      <p class="sec-sub">
+        Nedan visas ett typexempel på hur Kultur- och Fritidsnämndens (KoF)
+        investeringsbudget kan se ut i en liten svensk kommun med vikande
+        befolkningsunderlag. Exemplet illustrerar hur nämndernas investeringsbudget
+        2026–2030 förhåller sig till kommunens totala investeringsutrymme.
+        Principerna gäller generellt för liknande kommuner.
+      </p>
+
+      <!-- KoF metriker -->
+      <div class="grid-auto">
+        <div class="metric teal">
+          <div class="metric__label">KoF investeringsbudget 2025</div>
+          <div class="metric__value fade-update">10,5 Mnkr</div>
+          <div class="metric__sub">Historiskt referensvärde</div>
+        </div>
+        <div class="metric teal">
+          <div class="metric__label">KoF investeringsbudget 2027</div>
+          <div class="metric__value fade-update">5,3 Mnkr</div>
+          <div class="metric__sub">Plan enligt KoF-investeringsbudget</div>
+        </div>
+        <div class="metric teal">
+          <div class="metric__label">KoF:s 4-årsbudget 2027–2030</div>
+          <div class="metric__value fade-update">20,2 Mnkr</div>
+          <div class="metric__sub">Summa planerade investeringar</div>
+        </div>
+        <div class="metric" id="kof-share-metric">
+          <div class="metric__label">KoF:s andel av tot. inv.utrymme 2027</div>
+          <div class="metric__value fade-update" id="kof-share-val">3.8 %</div>
+          <div class="metric__sub">Beräknas vid valt balanskrav%</div>
+        </div>
+      </div>
+
+      <!-- KoF-investeringstabellen -->
+      <div class="card" style="margin-top:20px;">
+        <h3 class="card__title">KoF – planerade investeringar per projekt (tkr)</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Projekt</th>
+                <th>Budget 2026</th>
+                <th>Plan 2027</th>
+                <th>Plan 2028</th>
+                <th>Plan 2029</th>
+                <th>Plan 2030</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Utrustning uppstart ny idrottsanläggning</td><td>3 500</td><td>1 000</td><td>500</td><td>–</td><td>–</td></tr>
+              <tr><td>Konstnärlig utsmyckning</td><td>500</td><td>500</td><td>500</td><td>500</td><td>500</td></tr>
+              <tr><td>Ombyggnad/tillgängliggöra kulturhus</td><td>400</td><td>400</td><td>100</td><td>–</td><td>–</td></tr>
+              <tr><td>Digitalisering biblioteket</td><td>150</td><td>150</td><td>150</td><td>150</td><td>150</td></tr>
+              <tr><td>Konstinköp till kommunens konstsamling</td><td>125</td><td>125</td><td>125</td><td>125</td><td>125</td></tr>
+              <tr><td>Belysning idrottsplan</td><td>1 400</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+              <tr><td>Tillgängliggöra/digitalisera äldre magasin</td><td>150</td><td>150</td><td>100</td><td>–</td><td>–</td></tr>
+              <tr><td>Teknisk digital utveckling bibliotekssystem</td><td>130</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+              <tr><td>Ny entrémiljö simhall/badhus</td><td>–</td><td>1 500</td><td>1 500</td><td>–</td><td>–</td></tr>
+              <tr><td>Basutställning lokal historia</td><td>–</td><td>300</td><td>2 000</td><td>1 000</td><td>–</td></tr>
+              <tr><td>Entresolvåning</td><td>–</td><td>–</td><td>–</td><td>300</td><td>500</td></tr>
+              <tr><td>Bokbuss</td><td>–</td><td>–</td><td>–</td><td>3 000</td><td>–</td></tr>
+              <tr class="total">
+                <td>Summa nya enskilda investeringsprojekt</td>
+                <td>6 355</td><td>4 125</td><td>4 975</td><td>5 075</td><td>1 275</td>
+              </tr>
+              <tr><td>Reinvesteringar</td><td>1 200</td><td>1 200</td><td>1 200</td><td>1 200</td><td>1 200</td></tr>
+              <tr class="total">
+                <td><strong>Summa investeringsbudget KoF</strong></td>
+                <td><strong>7 555</strong></td>
+                <td><strong>5 325</strong></td>
+                <td><strong>6 125</strong></td>
+                <td><strong>6 275</strong></td>
+                <td><strong>2 475</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="footnote">
+          Källa: En mindre svensk kommun (2026). Ekonomisk presentation budgetunderlag –
+          Investeringsbudget Kultur- och Fritidsnämnden.
+        </p>
+      </div>
+
+      <!-- KoF-diagram mot kommunens totala investeringsutrymme -->
+      <div class="card" style="margin-top:20px;">
+        <h3 class="card__title">
+          KoF:s investeringsbudget mot kommunens totala investeringsutrymme
+          <span style="font-size:.8rem; font-weight:400; color:var(--text-light);">
+            (vid valt balanskrav%)
+          </span>
+        </h3>
+        <div class="chart-wrap sm">
+          <canvas id="kof-chart" width="1096" height="260" style="display: block; box-sizing: border-box; height: 260px; width: 1096px;"></canvas>
+        </div>
+        <p class="footnote">
+          KoF:s investeringsbudget är staplarna. Den totala kommunala investeringsramen (linje)
+          visar hur stor pool alla nämnder sammantaget delar på.
+          2031 saknas KoF-data i underlaget.
+        </p>
+      </div>
+
+      <div class="info-box blue" style="margin-top:16px;">
+        <strong>Perspektiv:</strong>
+        KoF:s planerade investeringsbudget 2027–2030 (totalt 20,2 Mnkr) utgör
+        <span id="kof-pct-text">ca 3.3 %</span> av kommunens totala
+        investeringsutrymme under samma period. Det illustrerar att
+        Kultur- och Fritidsnämndens investeringsmöjligheter är direkt beroende av
+        hela kommunens finansiella styrka och det balanskravsresultat
+        kommunfullmäktige sätter.
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-hr">
+
+  <!-- ==================================================
+       SEKTION 7 – JÄMFÖRELSE MED ANDRA KOMMUNER
+       ================================================== -->
+  <section style="background: var(--white);">
+    <div class="wrap">
+      <h2 class="sec-title">Jämförelse med andra svenska kommuner</h2>
+      <p class="sec-sub">
+        Vad är ett "normalt" balanskravsresultat för en mindre svensk
+        kommun? Här är en översikt baserad på offentligt tillgängliga
+        finansiella mål.
+      </p>
+
+      <div class="grid-2">
+        <div>
+          <p style="font-size:.9rem; color:var(--text-mid); margin-bottom:16px;">
+            Finansiellt mål för balanskravsresultat (% av skatter och statsbidrag):
+          </p>
+          <!-- Jämförelsetabell -->
+          <div class="compare-row highlight">
+            <span class="compare-name">Kommunen (mål)</span>
+            <div class="compare-bar-wrap"><div class="compare-bar" style="width:40%;"></div></div>
+            <span class="compare-pct">≥ 2 %</span>
+          </div>
+          <div class="compare-row highlight">
+            <span class="compare-name">Kommunen (budget)</span>
+            <div class="compare-bar-wrap"><div class="compare-bar" style="width:88%;background:var(--navy);"></div></div>
+            <span class="compare-pct">4,4 %</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-name">SKR:s rekommendation</span>
+            <div class="compare-bar-wrap"><div class="compare-bar" style="width:20%;background:#78909C;"></div></div>
+            <span class="compare-pct">≥ 1 %</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-name">Tjörn (mål)</span>
+            <div class="compare-bar-wrap"><div class="compare-bar" style="width:40%;background:#78909C;"></div></div>
+            <span class="compare-pct">≥ 2 %</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-name">Bjurholm (mål)</span>
+            <div class="compare-bar-wrap"><div class="compare-bar" style="width:40%;background:#78909C;"></div></div>
+            <span class="compare-pct">≥ 2 %</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-name">Finspång (mål)</span>
+            <div class="compare-bar-wrap"><div class="compare-bar" style="width:40%;background:#78909C;"></div></div>
+            <span class="compare-pct">≥ 2 %</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-name">Ovanåker (mål)</span>
+            <div class="compare-bar-wrap"><div class="compare-bar" style="width:60%;background:#78909C;"></div></div>
+            <span class="compare-pct">≥ 3 %</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-name">Rikssnitt, kommuner</span>
+            <div class="compare-bar-wrap"><div class="compare-bar" style="width:50%;background:#78909C;"></div></div>
+            <span class="compare-pct">~2–3 %</span>
+          </div>
+          <p class="footnote" style="margin-top:10px;">
+            Källa: Respektive kommuns budget och årsredovisning samt
+            Sveriges Kommuner och Regioner (SKR) (2024).
+            <em>Ekonomirapporten, om kommunernas och regionernas ekonomi.</em>
+            Stockholm: SKR. [Online]
+            <a href="https://skr.se/skr/ekonomijuridikstatistik/ekonomi/ekonomirapporten.html" target="_blank">skr.se/ekonomirapporten</a>
+          </p>
+        </div>
+
+        <div>
+          <div class="info-box blue">
+            <strong>Kommunens position:</strong>
+            Med ett finansiellt mål på minst 2 % och ett budgeterat
+            balanskravsresultat på 4,4 % befinner sig kommunen
+            i det starka skiktet bland jämförbara kommuner.
+            Många mindre kommuner nöjer sig med 1–2 % som mål,
+            vilket ger mer till driften men begränsar investeringsförmågan.
+          </div>
+
+          <div class="info-box gold" style="margin-top:14px;">
+            <strong>Varför just 2 % som minimumgräns?</strong>
+            Sveriges Kommuner och Regioner (SKR) rekommenderar
+            ett resultat som minst täcker realt kapitalslitage.
+            Vid låg inflation kan 1–2 % räcka, men vid hög inflation
+            och stort reinvesteringsbehov behövs ofta 3–4 % för
+            att bibehålla kommunens reala kapitalstock. En investeringsintensiv
+            period (över 1 Mdkr planerade investeringar under 5 år)
+            motiverar ett högt balanskravsmål.
+          </div>
+
+          <div class="info-box green" style="margin-top:14px;">
+            <strong>Självfinansieringsgrad:</strong>
+            Kommunen uppnår nästan 100 % självfinansieringsgrad
+            av skattefinansierade investeringar vid 3–4 % balanskrav,
+            vilket innebär att inga lån behöver tas för dessa
+            investeringar. Det är en exceptionellt stark position
+            som kräver ett högt balanskravsresultat.
+            (Kommunens budget, s. 32)
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-hr">
+
+  <!-- ==================================================
+       SEKTION 8 – KÄLLFÖRTECKNING (Harvard)
+       ================================================== -->
+  <section class="sources-section">
+    <div class="wrap">
+      <h2>Källförteckning</h2>
+      <ol>
+        <li>
+          En mindre svensk kommun (2026).
+          <em>Ekonomisk presentation budgetunderlag 2027–2031</em>.
+          Kommunens budgetberedning. Kommunstyrelseförvaltningen: Ekonomiavdelningen.
+          [Internt kommunalt underlag.]
+        </li>
+        <li>
+          En mindre svensk kommun (2024).
+          <em>Kommunens budget och plan 2026–2029</em>.
+          Kommunfullmäktige. [Internt kommunalt styrdokument.]
+        </li>
+        <li>
+          Sveriges Kommuner och Regioner (SKR) (2024).
+          <em>Ekonomirapporten, om kommunernas och regionernas ekonomi – oktober 2024</em>.
+          Stockholm: SKR. [Online] Tillgänglig:
+          <a href="https://skr.se/skr/ekonomijuridikstatistik/ekonomi/ekonomirapporten.html" target="_blank">
+            skr.se/ekonomirapporten
+          </a>
+        </li>
+        <li>
+          Rådet för kommunal redovisning (RKR) (2022).
+          <em>R4 Materiella anläggningstillgångar</em>.
+          Stockholm: RKR. [Online] Tillgänglig:
+          <a href="https://www.rkr.se/" target="_blank">www.rkr.se</a>
+        </li>
+        <li>
+          Kommunallagen (2017:725). Stockholm: Finansdepartementet.
+          [Online] Tillgänglig via Sveriges riksdag:
+          <a href="https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/kommunallag-2017725_sfs-2017-725/" target="_blank">riksdagen.se – Kommunallagen (2017:725)</a>
+        </li>
+        <li>
+          Statistiska centralbyrån (SCB) (2025).
+          <em>Befolkningsstatistik – kommuner</em>.
+          Stockholm: SCB. [Online] Tillgänglig:
+          <a href="https://www.scb.se/hitta-statistik/statistik-efter-amne/befolkning/" target="_blank">scb.se/befolkning</a>
+        </li>
+      </ol>
+
+      <div class="note">
+        <strong>Not om beräkningsmodell:</strong>
+        Alla beräkningar i detta program baseras på data ur
+        en mindre svensk kommuns budgetpresentation.
+        Formeln för investeringsutrymme: <em>Balanskravsresultat (tkr)
+        + Avskrivningar (tkr) = Totalt investeringsutrymme (tkr)</em>,
+        i enlighet med kommunens egna budgetdokument.
+        Finansiellt utrymme på driften beräknas som:
+        <em>Prognostiserat balanskravsresultat − Krav på balanskravsresultat vid vald %</em>.
+        Alla belopp i tusenkronor (tkr) om inget annat anges.
+        1 % av skatteintäkter och statsbidrag 2027 ≈ 15 026 tkr ≈ 15 Mnkr.
+        Principerna är generellt tillämpliga för svenska kommuner med liknande
+        demografisk och ekonomisk profil.
+        <br><br>
+        Program skapat av Kent Lundgren · <a href="https://www.kentlundgren.se/" target="_blank" style="color:#90CAF9;">www.kentlundgren.se</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================
+       JAVASCRIPT – all interaktivitet och datalogik
+       ================================================== -->
+  <script>
+
+  /* ============================================================
+     1. GRUNDDATA
+     Alla värden i tusenkronor (tkr) om inget annat anges.
+     Källa: En mindre svensk kommun (2026). Ekonomisk presentation
+            budgetunderlag 2027–2031.
+     ============================================================ */
+
+  const YEARS = [2027, 2028, 2029, 2030, 2031];
+
+  // Skatteintäkter per år (tkr)
+  const TAX = { 2027: 1044307, 2028: 1078039, 2029: 1121089, 2030: 1160348, 2031: 1197155 };
+
+  // Generella statsbidrag och utjämning per år (tkr)
+  const GRANTS = { 2027: 458259, 2028: 468237, 2029: 467035, 2030: 470302, 2031: 474400 };
+
+  // Prognostiserat balanskravsresultat (tkr)
+  // = vad kommunen beräknas uppnå med nuvarande budget
+  const PROJ_BKR = { 2027: 70007, 2028: 62822, 2029: 47746, 2030: 39635, 2031: 22720 };
+
+  // Avskrivningar per år (tkr) – ingår i investeringsutrymmet
+  const DEPRECIATIONS = { 2027: 94525, 2028: 100515, 2029: 109366, 2030: 116191, 2031: 116191 };
+
+  // Kultur- och Fritidsnämndens investeringsbudget (tkr)
+  const KOF_INV = { 2025: 10500, 2026: 7555, 2027: 5325, 2028: 6125, 2029: 6275, 2030: 2475, 2031: null };
+
+  /* ============================================================
+     2. BERÄKNINGSFUNKTIONER
+     ============================================================ */
+
+  // Totala skatter och statsbidrag för ett givet år
+  function totalRev(year) {
+    return TAX[year] + GRANTS[year];
+  }
+
+  // Nödvändigt balanskravsresultat i tkr vid given procentsats och år
+  function requiredBKR(pct, year) {
+    return (pct / 100) * totalRev(year);
+  }
+
+  // Finansiellt utrymme på driften:
+  //   Positivt = extra pengar att fördela till nämnderna (utöver basbudget)
+  //   Negativt = driften MÅSTE sänkas för att nå det valda balanskravsmålet
+  function driftSpace(pct, year) {
+    return PROJ_BKR[year] - requiredBKR(pct, year);
+  }
+
+  // Investeringsutrymme = balanskravsresultat (tkr) + avskrivningar
+  function investSpace(pct, year) {
+    return requiredBKR(pct, year) + DEPRECIATIONS[year];
+  }
+
+  // Summa investeringsutrymme för alla år (5-årsperiod)
+  function totalInvestSpace(pct) {
+    return YEARS.reduce((sum, y) => sum + investSpace(pct, y), 0);
+  }
+
+  // Summa driftutrymme för alla år (5-årsperiod)
+  function totalDriftSpace(pct) {
+    return YEARS.reduce((sum, y) => sum + driftSpace(pct, y), 0);
+  }
+
+  // Formatera ett tkr-värde som läsbar Mnkr-sträng
+  function fmt(tkr, decimals = 1) {
+    const mnkr = tkr / 1000;
+    const formatted = mnkr.toLocaleString('sv-SE', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+    return formatted + ' Mnkr';
+  }
+
+  // Formatera tkr-värde med tusendelsseparator
+  function fmtTkr(tkr) {
+    return Math.round(tkr).toLocaleString('sv-SE') + ' tkr';
+  }
+
+  // Avgör CSS-klass baserat på om värdet är positivt eller negativt
+  function valClass(val) {
+    if (val > 500)  return 'pos';
+    if (val < -500) return 'neg';
+    return 'warn';
+  }
+
+  /* ============================================================
+     3. CHART.JS – DIAGRAMINSTANSER
+     ============================================================ */
+
+  // Gemensamma fontstilsinställningar
+  Chart.defaults.font.family = "'Source Serif 4', Georgia, serif";
+  Chart.defaults.color = '#4A5568';
+
+  // Diagram 1: Drift + investeringsutrymme per år (uppdateras dynamiskt)
+  const mainCtx = document.getElementById('main-chart').getContext('2d');
+  const mainChart = new Chart(mainCtx, {
+    type: 'bar',
+    data: {
+      labels: YEARS.map(y => y.toString()),
+      datasets: [
+        {
+          // Positivt driftutrymme (grön stapel)
+          label: 'Finansiellt utrymme drift (pos)',
+          data: Array(5).fill(0),
+          backgroundColor: '#43A047',
+          borderColor: '#2E7D32',
+          borderWidth: 1,
+          stack: 'drift'
+        },
+        {
+          // Negativt driftutrymme (röd stapel – visas som absolutvärde)
+          label: 'Krävda besparingar drift (neg)',
+          data: Array(5).fill(0),
+          backgroundColor: '#EF5350',
+          borderColor: '#B71C1C',
+          borderWidth: 1,
+          stack: 'drift_neg'
+        },
+        {
+          // Investeringsutrymme (blå stapel)
+          label: 'Investeringsutrymme',
+          data: Array(5).fill(0),
+          backgroundColor: 'rgba(42,120,192,.75)',
+          borderColor: '#005A9E',
+          borderWidth: 1,
+          stack: 'invest'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + ctx.dataset.label + ': ' +
+              Math.round(ctx.parsed.y).toLocaleString('sv-SE') + ' tkr (' +
+              (ctx.parsed.y / 1000).toFixed(1) + ' Mnkr)'
+          }
+        }
+      },
+      scales: {
+        y: {
+          title: { display: true, text: 'Mnkr' },
+          ticks: {
+            callback: val => (val / 1000).toFixed(0) + ' Mnkr'
+          },
+          grid: { color: 'rgba(0,0,0,.06)' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Diagram 2: Investeringsutrymme uppdelat på avskrivningar + BKR
+  const investCtx = document.getElementById('invest-chart').getContext('2d');
+  const investChart = new Chart(investCtx, {
+    type: 'bar',
+    data: {
+      labels: YEARS.map(y => y.toString()),
+      datasets: [
+        {
+          label: 'Avskrivningar (fast del)',
+          data: YEARS.map(y => DEPRECIATIONS[y]),
+          backgroundColor: '#1565C0',
+          borderWidth: 0,
+          stack: 'inv'
+        },
+        {
+          label: 'Balanskravsresultat (varierar med %)',
+          data: Array(5).fill(0),
+          backgroundColor: '#0097A7',
+          borderWidth: 0,
+          stack: 'inv'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + ctx.dataset.label + ': ' +
+              Math.round(ctx.parsed.y).toLocaleString('sv-SE') + ' tkr'
+          }
+        }
+      },
+      scales: {
+        y: {
+          stacked: true,
+          ticks: { callback: val => (val / 1000).toFixed(0) + ' Mnkr' },
+          grid: { color: 'rgba(0,0,0,.06)' }
+        },
+        x: { stacked: true, grid: { display: false } }
+      }
+    }
+  });
+
+  // Diagram 3: Scenariejämförelse 2%/3%/4% investeringsutrymme
+  const scenCtx = document.getElementById('scenario-chart').getContext('2d');
+  const scenChart = new Chart(scenCtx, {
+    type: 'line',
+    data: {
+      labels: YEARS.map(y => y.toString()),
+      datasets: [
+        {
+          label: '4 % balanskrav',
+          data: YEARS.map(y => investSpace(4, y) / 1000),
+          borderColor: '#0D47A1',
+          backgroundColor: 'rgba(13,71,161,.08)',
+          borderWidth: 2.5,
+          pointRadius: 5,
+          tension: .3,
+          fill: false
+        },
+        {
+          label: '3 % balanskrav',
+          data: YEARS.map(y => investSpace(3, y) / 1000),
+          borderColor: '#00897B',
+          backgroundColor: 'rgba(0,137,123,.08)',
+          borderWidth: 2.5,
+          pointRadius: 5,
+          tension: .3,
+          fill: false
+        },
+        {
+          label: '2 % balanskrav',
+          data: YEARS.map(y => investSpace(2, y) / 1000),
+          borderColor: '#E65100',
+          backgroundColor: 'rgba(230,81,0,.08)',
+          borderWidth: 2.5,
+          pointRadius: 5,
+          tension: .3,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + ctx.dataset.label + ': ' +
+              ctx.parsed.y.toFixed(1) + ' Mnkr'
+          }
+        }
+      },
+      scales: {
+        y: {
+          title: { display: true, text: 'Mnkr (investeringsutrymme)' },
+          grid: { color: 'rgba(0,0,0,.06)' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Diagram 4: Prognostiserat BKR vs krav vid 2%/3%/4%
+  const bkrCtx = document.getElementById('bkr-chart').getContext('2d');
+  const bkrChart = new Chart(bkrCtx, {
+    type: 'line',
+    data: {
+      labels: YEARS.map(y => y.toString()),
+      datasets: [
+        {
+          label: 'Prognostiserat BKR (basscenario)',
+          data: YEARS.map(y => PROJ_BKR[y] / 1000),
+          borderColor: '#37474F',
+          backgroundColor: 'rgba(55,71,79,.12)',
+          borderWidth: 3,
+          borderDash: [6, 3],
+          pointRadius: 5,
+          fill: true
+        },
+        {
+          label: 'Krav vid 4 %',
+          data: YEARS.map(y => requiredBKR(4, y) / 1000),
+          borderColor: '#0D47A1',
+          borderWidth: 2,
+          pointRadius: 4,
+          fill: false,
+          tension: .2
+        },
+        {
+          label: 'Krav vid 3 %',
+          data: YEARS.map(y => requiredBKR(3, y) / 1000),
+          borderColor: '#00897B',
+          borderWidth: 2,
+          pointRadius: 4,
+          fill: false,
+          tension: .2
+        },
+        {
+          label: 'Krav vid 2 %',
+          data: YEARS.map(y => requiredBKR(2, y) / 1000),
+          borderColor: '#E65100',
+          borderWidth: 2,
+          pointRadius: 4,
+          fill: false,
+          tension: .2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + ctx.dataset.label + ': ' +
+              ctx.parsed.y.toFixed(1) + ' Mnkr'
+          }
+        }
+      },
+      scales: {
+        y: {
+          title: { display: true, text: 'Mnkr (balanskravsresultat)' },
+          grid: { color: 'rgba(0,0,0,.06)' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Diagram 5: KoF investeringsbudget mot kommunens investeringsutrymme
+  const kofCtx = document.getElementById('kof-chart').getContext('2d');
+  const kofChart = new Chart(kofCtx, {
+    type: 'bar',
+    data: {
+      labels: ['2026', '2027', '2028', '2029', '2030'],
+      datasets: [
+        {
+          label: 'KoF investeringsbudget (tkr)',
+          data: [KOF_INV[2026], KOF_INV[2027], KOF_INV[2028], KOF_INV[2029], KOF_INV[2030]],
+          backgroundColor: '#00796B',
+          borderWidth: 0,
+          yAxisID: 'y-kof'
+        },
+        {
+          // Investeringsutrymme kommunen – uppdateras dynamiskt
+          label: 'Kommunens totala investeringsutrymme (tkr)',
+          type: 'line',
+          data: Array(5).fill(0), // fylls av updateUI()
+          borderColor: '#1565C0',
+          borderWidth: 2.5,
+          pointRadius: 5,
+          fill: false,
+          yAxisID: 'y-tot'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const tkr = Math.round(ctx.parsed.y);
+              return ' ' + ctx.dataset.label + ': ' +
+                tkr.toLocaleString('sv-SE') + ' tkr (' +
+                (tkr / 1000).toFixed(1) + ' Mnkr)';
+            }
+          }
+        }
+      },
+      scales: {
+        'y-kof': {
+          type: 'linear',
+          position: 'left',
+          title: { display: true, text: 'KoF tkr' },
+          ticks: { callback: val => (val / 1000).toFixed(0) + ' Mnkr' }
+        },
+        'y-tot': {
+          type: 'linear',
+          position: 'right',
+          title: { display: true, text: 'Totalt tkr' },
+          ticks: { callback: val => (val / 1000).toFixed(0) + ' Mnkr' },
+          grid: { drawOnChartArea: false }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  /* ============================================================
+     4. UI-UPPDATERINGSFUNKTIONER
+     ============================================================ */
+
+  // Huvud-UI-uppdatering – körs varje gång slidern ändras
+  function updateUI(pct) {
+
+    // ---- SNABBA NYCKELTAL HÖGST UPP PÅ SIDAN ----
+    document.getElementById('quick-metrics').innerHTML = `
+      <div class="metric">
+        <div class="metric__label">Total driftsbudget 2027</div>
+        <div class="metric__value">1 436 Mnkr</div>
+        <div class="metric__sub">+3 % PKV jämfört med 2026</div>
+      </div>
+      <div class="metric green">
+        <div class="metric__label">Skatteint. + statsbidrag 2027</div>
+        <div class="metric__value">1 503 Mnkr</div>
+        <div class="metric__sub">Underlag för balanskravsberäkning</div>
+      </div>
+      <div class="metric gold">
+        <div class="metric__label">1 % balanskrav = (2027)</div>
+        <div class="metric__value">≈ 15 Mnkr</div>
+        <div class="metric__sub">Känslighetsfaktor per procentenhet</div>
+      </div>
+      <div class="metric red">
+        <div class="metric__label">Prognostiserat BKR 2031</div>
+        <div class="metric__value">22,7 Mnkr</div>
+        <div class="metric__sub">Utan politiska åtgärder</div>
+      </div>
+    `;
+
+    // ---- SLIDER EXPLAINER TEXT ----
+    const driftSpaceY27 = driftSpace(pct, 2027);
+    const invSpaceY27   = investSpace(pct, 2027);
+    const perPct        = totalRev(2027) / 100;  // tkr per 1% = ~15 000 (1% av totala intäkter)
+
+    let explainerTxt;
+    if (driftSpaceY27 > 2000) {
+      explainerTxt = `
+        Med <strong>${pct.toFixed(1)} %</strong> balanskrav finns det år 2027
+        ett finansiellt utrymme om <strong>${fmt(driftSpaceY27)}</strong>
+        som KAN fördelas till nämnderna utöver nuvarande basbudget.
+        Investeringsutrymmet 2027 uppgår till <strong>${fmt(invSpaceY27)}</strong>.
+        Varje ytterligare %-enhet sänkning frigör ca ${(perPct/1000).toFixed(0)} Mnkr
+        till drift men minskar investeringsutrymmet med samma belopp.
+      `;
+    } else if (driftSpaceY27 < -2000) {
+      explainerTxt = `
+        ⚠ Med <strong>${pct.toFixed(1)} %</strong> balanskrav krävs
+        besparingar om <strong>${fmt(Math.abs(driftSpaceY27))}</strong>
+        i driften år 2027 för att uppnå målet. Det innebär att nämndernas
+        budgetar <em>måste sänkas</em>. Investeringsutrymmet 2027 är
+        <strong>${fmt(invSpaceY27)}</strong>.
+      `;
+    } else {
+      explainerTxt = `
+        Med <strong>${pct.toFixed(1)} %</strong> balanskrav är det
+        finansiella utrymmet på driften 2027 i det närmaste noll
+        (<strong>${fmt(driftSpaceY27)}</strong>). Prognosen är
+        precis tillräcklig för att nå målet utan besparingar.
+        Investeringsutrymmet 2027 uppgår till <strong>${fmt(invSpaceY27)}</strong>.
+      `;
+    }
+    document.getElementById('slider-explainer').innerHTML = explainerTxt;
+
+    // ---- NYCKELTAL FÖR 2027 ----
+    const driftClass  = valClass(driftSpaceY27);
+    const driftFmt    = (driftSpaceY27 >= 0 ? '+' : '') + fmt(driftSpaceY27);
+    document.getElementById('year-metrics').innerHTML = `
+      <div class="metric ${driftSpaceY27 >= 0 ? 'green' : 'red'}">
+        <div class="metric__label">Finansiellt utrymme drift 2027</div>
+        <div class="metric__value ${driftClass}">${driftFmt}</div>
+        <div class="metric__sub">
+          ${driftSpaceY27 >= 0
+            ? 'Extra utrymme att fördela till nämnderna'
+            : 'Drift MÅSTE sänkas för att uppnå balanskravsmålet'}
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric__label">Balanskravsresultat 2027 (tkr)</div>
+        <div class="metric__value">${fmt(requiredBKR(pct, 2027))}</div>
+        <div class="metric__sub">${pct.toFixed(1)} % × 1 502,6 Mnkr</div>
+      </div>
+      <div class="metric teal">
+        <div class="metric__label">Investeringsutrymme 2027</div>
+        <div class="metric__value">${fmt(invSpaceY27)}</div>
+        <div class="metric__sub">BKR + avskrivningar (94,5 Mnkr)</div>
+      </div>
+      <div class="metric gold">
+        <div class="metric__label">Avskrivningar 2027 (fast)</div>
+        <div class="metric__value">${fmt(DEPRECIATIONS[2027])}</div>
+        <div class="metric__sub">Oberoende av balanskravsnivå</div>
+      </div>
+    `;
+
+    // ---- UPPDATERA HUVUD-DIAGRAM ----
+    // Separera positiva och negativa driftutrymmen för korrekt visualisering
+    mainChart.data.datasets[0].data = YEARS.map(y => Math.max(0, driftSpace(pct, y)));
+    mainChart.data.datasets[1].data = YEARS.map(y => Math.max(0, -driftSpace(pct, y)));
+    mainChart.data.datasets[2].data = YEARS.map(y => investSpace(pct, y));
+    mainChart.update();
+
+    // ---- UPPDATERA INVESTERINGS-DIAGRAM ----
+    investChart.data.datasets[1].data = YEARS.map(y => requiredBKR(pct, y));
+    investChart.update();
+
+    // ---- TRADEOFF VISUALISERING (2027) ----
+    const driftEl  = document.getElementById('tradeoff-drift');
+    const investEl = document.getElementById('tradeoff-invest');
+
+    const driftFmtSign = (driftSpaceY27 >= 0 ? '+' : '') + fmt(driftSpaceY27, 1);
+    const driftCss     = driftSpaceY27 >= 0 ? 'pos' : 'neg';
+    const sideCss      = driftSpaceY27 >= 0 ? 'drift-side' : 'drift-side neg';
+
+    driftEl.className  = 'tradeoff-side ' + sideCss;
+    driftEl.innerHTML  = `
+      <div class="tradeoff-icon">${driftSpaceY27 >= 0 ? '📋' : '✂️'}</div>
+      <div class="label">Finansiellt utrymme drift 2027</div>
+      <div class="amount ${driftCss}">${driftFmtSign}</div>
+      <div class="sub">
+        ${driftSpaceY27 >= 0
+          ? 'Extra att ge till verksamheten'
+          : 'Besparingar krävs i driften'}
+      </div>
+    `;
+    investEl.innerHTML = `
+      <div class="tradeoff-icon">🏗️</div>
+      <div class="label">Investeringsutrymme 2027</div>
+      <div class="amount">${fmt(invSpaceY27, 1)}</div>
+      <div class="sub">BKR + avskrivningar (94,5 Mnkr)</div>
+    `;
+
+    // ---- 5-ÅRS NYCKELTAL ----
+    const tot5inv   = totalInvestSpace(pct);
+    const tot5drift = totalDriftSpace(pct);
+    const inv2pct   = totalInvestSpace(2);
+    const inv4pct   = totalInvestSpace(4);
+    const diffVs2   = tot5inv - inv2pct;
+    const diffVs4   = tot5inv - inv4pct;
+
+    document.getElementById('fiveyear-metrics').innerHTML = `
+      <div class="metric teal">
+        <div class="metric__label">Totalt inv.utrymme 2027–2031</div>
+        <div class="metric__value">${fmt(tot5inv, 0)}</div>
+        <div class="metric__sub">Balanskrav + avskrivningar, 5 år</div>
+      </div>
+      <div class="metric ${tot5drift >= 0 ? 'green' : 'red'}">
+        <div class="metric__label">Tot. driftutrymme 2027–2031</div>
+        <div class="metric__value ${tot5drift >= 0 ? 'pos' : 'neg'}">
+          ${(tot5drift >= 0 ? '+' : '') + fmt(tot5drift, 0)}
+        </div>
+        <div class="metric__sub">Ackumulerat utrymme/besparing</div>
+      </div>
+      <div class="metric gold">
+        <div class="metric__label">Skillnad mot 2 %-alternativet</div>
+        <div class="metric__value ${diffVs2 >= 0 ? 'pos' : 'neg'}">
+          ${(diffVs2 >= 0 ? '+' : '') + fmt(diffVs2, 0)}
+        </div>
+        <div class="metric__sub">mer/mindre investering vs 2 %</div>
+      </div>
+      <div class="metric gold">
+        <div class="metric__label">Skillnad mot 4 %-alternativet</div>
+        <div class="metric__value ${diffVs4 >= 0 ? 'pos' : 'neg'}">
+          ${(diffVs4 >= 0 ? '+' : '') + fmt(diffVs4, 0)}
+        </div>
+        <div class="metric__sub">mer/mindre investering vs 4 %</div>
+      </div>
+    `;
+
+    // ---- FULLSTÄNDIG TABELL ----
+    let tableHTML = `
+      <thead>
+        <tr>
+          <th>Post (tkr)</th>
+          ${YEARS.map(y => `<th>${y}</th>`).join('')}
+          <th>Summa</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Skatteintäkter</td>
+          ${YEARS.map(y => `<td>${Math.round(TAX[y]).toLocaleString('sv-SE')}</td>`).join('')}
+          <td>${Math.round(YEARS.reduce((s,y)=>s+TAX[y],0)).toLocaleString('sv-SE')}</td>
+        </tr>
+        <tr>
+          <td>Generella statsbidrag</td>
+          ${YEARS.map(y => `<td>${Math.round(GRANTS[y]).toLocaleString('sv-SE')}</td>`).join('')}
+          <td>${Math.round(YEARS.reduce((s,y)=>s+GRANTS[y],0)).toLocaleString('sv-SE')}</td>
+        </tr>
+        <tr class="total">
+          <td>Totala intäkter (skatt+bidrag)</td>
+          ${YEARS.map(y => `<td>${Math.round(totalRev(y)).toLocaleString('sv-SE')}</td>`).join('')}
+          <td>${Math.round(YEARS.reduce((s,y)=>s+totalRev(y),0)).toLocaleString('sv-SE')}</td>
+        </tr>
+        <tr>
+          <td>Prognostiserat BKR</td>
+          ${YEARS.map(y => `<td>${Math.round(PROJ_BKR[y]).toLocaleString('sv-SE')}</td>`).join('')}
+          <td>${Math.round(YEARS.reduce((s,y)=>s+PROJ_BKR[y],0)).toLocaleString('sv-SE')}</td>
+        </tr>
+        <tr>
+          <td>Balanskrav vid ${pct.toFixed(1)} % (tkr)</td>
+          ${YEARS.map(y => `<td>${Math.round(requiredBKR(pct,y)).toLocaleString('sv-SE')}</td>`).join('')}
+          <td>${Math.round(YEARS.reduce((s,y)=>s+requiredBKR(pct,y),0)).toLocaleString('sv-SE')}</td>
+        </tr>
+        <tr>
+          <td>Avskrivningar</td>
+          ${YEARS.map(y => `<td>${Math.round(DEPRECIATIONS[y]).toLocaleString('sv-SE')}</td>`).join('')}
+          <td>${Math.round(YEARS.reduce((s,y)=>s+DEPRECIATIONS[y],0)).toLocaleString('sv-SE')}</td>
+        </tr>
+        <tr class="total">
+          <td><strong>Investeringsutrymme</strong></td>
+          ${YEARS.map(y => {
+            const v = Math.round(investSpace(pct,y));
+            return `<td><strong>${v.toLocaleString('sv-SE')}</strong></td>`;
+          }).join('')}
+          <td><strong>${Math.round(YEARS.reduce((s,y)=>s+investSpace(pct,y),0)).toLocaleString('sv-SE')}</strong></td>
+        </tr>
+        <tr class="total">
+          <td><strong>Finansiellt utrymme drift</strong></td>
+          ${YEARS.map(y => {
+            const v = Math.round(driftSpace(pct,y));
+            const cls = v >= 0 ? 'td-pos' : 'td-neg';
+            return `<td><strong class="${cls}">${(v>=0?'+':'')+v.toLocaleString('sv-SE')}</strong></td>`;
+          }).join('')}
+          <td>
+            <strong class="${Math.round(totalDriftSpace(pct)) >= 0 ? 'td-pos' : 'td-neg'}">
+              ${(totalDriftSpace(pct)>=0?'+':'')+Math.round(totalDriftSpace(pct)).toLocaleString('sv-SE')}
+            </strong>
+          </td>
+        </tr>
+      </tbody>
+    `;
+    document.getElementById('main-table').innerHTML = tableHTML;
+
+    // ---- KOF SEKTION ----
+    // Beräkna KoF:s andel av investeringsutrymme 2027
+    const kofShare27 = (KOF_INV[2027] / investSpace(pct, 2027) * 100).toFixed(1);
+    document.getElementById('kof-share-val').textContent = kofShare27 + ' %';
+
+    // Uppdatera KoF-diagrammets kommunlinje
+    const kofYears = [2026, 2027, 2028, 2029, 2030];
+    // För 2026 använder vi 3 % (basbudget 2026)
+    const kofTotalLine = [
+      investSpace(3, 2027), // Använd 2027 som approximation för 2026 (saknas data)
+      investSpace(pct, 2027),
+      investSpace(pct, 2028),
+      investSpace(pct, 2029),
+      investSpace(pct, 2030)
+    ];
+    kofChart.data.datasets[1].data = kofTotalLine;
+    kofChart.update();
+
+    // Uppdatera KoF-%-texten
+    const kofTotal2731 = KOF_INV[2027] + KOF_INV[2028] + KOF_INV[2029] + KOF_INV[2030];
+    const totInv2731 = investSpace(pct,2027)+investSpace(pct,2028)+
+                       investSpace(pct,2029)+investSpace(pct,2030);
+    const kofPct = (kofTotal2731 / totInv2731 * 100).toFixed(1);
+    document.getElementById('kof-pct-text').textContent = `ca ${kofPct} %`;
+
+    // ---- STICKY BAR ----
+    document.getElementById('sticky-pct-display').textContent = pct.toFixed(1).replace('.',',') + ' %';
+    const invY27Mnkr = (invSpaceY27/1000).toFixed(0);
+    const driftY27Mnkr = (Math.abs(driftSpaceY27)/1000).toFixed(0);
+    const driftSign = driftSpaceY27 >= 0 ? '+' : '−';
+    document.getElementById('sticky-summary-text').innerHTML =
+      `2027: Inv.utrymme <strong>${invY27Mnkr} Mnkr</strong> · ` +
+      `Driftutrymme <strong>${driftSign}${driftY27Mnkr} Mnkr</strong>`;
+
+    // Klassmarkera mätvärden som "fade-update" för animation
+    document.querySelectorAll('.metric__value, .tradeoff-side').forEach(el => {
+      el.classList.remove('fade-update');
+      void el.offsetWidth; // tvinga reflow
+      el.classList.add('fade-update');
+    });
+  }
+
+  /* ============================================================
+     5. SLIDER-HÄNDELSEHANTERING
+     ============================================================ */
+
+  const slider = document.getElementById('bkr-slider');
+  const pctDisplay = document.getElementById('pct-display');
+  const stickyBar = document.getElementById('sticky-bar');
+
+  // Initial rendering
+  updateUI(parseFloat(slider.value));
+
+  // Lyssna på sliderändring
+  slider.addEventListener('input', function () {
+    const pct = parseFloat(this.value);
+
+    // Formatera procentvärde med komma (sv-SE)
+    pctDisplay.textContent = pct.toFixed(1).replace('.', ',');
+
+    // Synkronisera sticky display
+    document.getElementById('sticky-pct-display').textContent =
+      pct.toFixed(1).replace('.', ',') + ' %';
+
+    // Uppdatera UI
+    updateUI(pct);
+  });
+
+  /* ============================================================
+     6. SCROLL-BASERAT STICKY-BAR
+     ============================================================ */
+  window.addEventListener('scroll', function () {
+    const heroBottom = document.getElementById('page-top').offsetHeight;
+    stickyBar.style.display = window.scrollY > heroBottom ? 'block' : 'none';
+  });
+
+  /* ============================================================
+     7. HJÄLPFUNKTION – årsknapparna (om de behövs)
+     ============================================================ */
+  // Möjlighet att filtrera vyer per år (finns om knapparna läggs till)
+
+  </script>
+
+
+</body></html>

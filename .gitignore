@@ -1,0 +1,23 @@
+﻿# Operativsystem-filer
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Loggfiler
+*.log
+
+# Node.js
+node_modules/
+
+# Byggmappar
+dist/
+build/
+
+# MiljÃ¶variabler (kÃ¤nslig info)
+.env
+.env.local
+.env.*.local
+
+# Editor-mappar
+.vscode/
+.idea/
