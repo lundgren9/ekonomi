@@ -21,6 +21,11 @@ Inkluderar även ett exempel på kultur- och fritidsnämndens investeringsutrymm
 
 **Underlag:** En mindre svensk kommuns ekonomiska underlag (budgetberedning 2026).
 
+Den grundläggande ekonomiska logiken bakom visualiseringen – varför ett positivt balanskravsresultat
+är en förutsättning för kommunala investeringar – diskuteras utförligt i blogginlägget
+[*Ingen vinst, ingen nyinvestering*](https://controllerutangranser.wordpress.com/2026/03/15/ingen-vinst-inga-investeringar/)
+(Lundgren, 2026).
+
 ---
 
 ## Liveversion (GitHub Pages)
@@ -56,6 +61,14 @@ git clone https://github.com/lundgren9/ekonomi.git
 ```
 
 Öppna därefter `Balanskrav/index.html` direkt i en webbläsare.
+
+---
+
+## Källor
+
+Lundgren, K. (2026). *Ingen vinst, ingen nyinvestering – om det kommunala sparandets logik*.
+Controller, lärare och coach utan gränser reflekterar \[Blogg\], 15 mars.
+Tillgänglig: [controllerutangranser.wordpress.com](https://controllerutangranser.wordpress.com/2026/03/15/ingen-vinst-inga-investeringar/)
 
 ---
 
