@@ -145,6 +145,23 @@
       z-index: 100;
     }
 
+    /* -------------------------------------------------------
+       7b. KÄLLKODSLÄNK (nere till vänster, utanför sliden)
+       Diskret länk tillbaka till GitHub-repot och README.
+       ------------------------------------------------------- */
+    #repo-link {
+      position: absolute;
+      bottom: clamp(4px, 1vh, 14px);
+      left: clamp(8px, 1.5vw, 20px);
+      z-index: 100;
+      color: rgba(255,255,255,0.25);
+      font-family: 'Courier New', monospace;
+      font-size: clamp(8px, 1vw, 11px);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    #repo-link:hover { color: rgba(255,255,255,0.65); }
+
     #slide-counter-display {
       color: rgba(255,255,255,0.4);
       font-family: 'Courier New', monospace;
@@ -1359,6 +1376,15 @@
     <span id="slide-counter-display">1 / 14</span>
     <button id="btn-fullscreen" aria-label="Fullskärm" title="Fullskärm (F)">&#x26F6;</button>
   </div>
+
+  <!-- Diskret källkodslänk nere till vänster — länk tillbaka till GitHub-repot -->
+  <a id="repo-link"
+     href="https://github.com/lundgren9/ekonomi/tree/main/Investeringar_2027_2031"
+     target="_blank"
+     rel="noopener"
+     title="Källkod &amp; README på GitHub">
+    github.com/lundgren9/ekonomi
+  </a>
 
 </div><!-- /presentation -->
 
