@@ -641,6 +641,159 @@
       font-style: italic;
     }
 
+    /* -------------------------------------------------------
+       UTSKRIFTSKNAPP — visas på slide 1 och slide 14.
+       Dold vid utskrift. Chip-stil, matchar övriga knappar.
+       ------------------------------------------------------- */
+    .print-btn {
+      background: rgba(0,0,0,0.04);
+      border: 0.5px solid rgba(0,0,0,0.12);
+      color: rgba(0,0,0,0.45);
+      font-size: clamp(9px, 1.2vw, 14px);
+      font-family: 'Georgia', 'Palatino Linotype', serif;
+      padding: clamp(3px, 0.5vh, 7px) clamp(10px, 1.5vw, 18px);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      margin-top: clamp(6px, 1vh, 12px);
+    }
+
+    .print-btn:hover {
+      background: rgba(0,0,0,0.08);
+      color: rgba(0,0,0,0.7);
+      border-color: rgba(0,0,0,0.25);
+    }
+
+    /* -------------------------------------------------------
+       UTSKRIFTS-CSS (@media print)
+       Varje slide visas och bryts till en ny sida.
+       Navigering, knappar och verktygsfält döljs.
+       ------------------------------------------------------- */
+    @media print {
+
+      /* Bevara bakgrundsfärger och -bilder vid utskrift */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Sidformat: 16:9 liggande, inga marginaler */
+      @page {
+        size: 297mm 167mm;
+        margin: 0;
+      }
+
+      html, body {
+        width: 297mm;
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+      }
+
+      /* Presentationsramen: statisk layout för utskrift */
+      #presentation {
+        width: 297mm !important;
+        height: auto !important;
+        background: white !important;
+        display: block !important;
+        position: static !important;
+      }
+
+      /* Dölj allt som inte ska skrivas ut */
+      #progress-bar-bg,
+      .nav-btn,
+      #toolbar,
+      #repo-link,
+      .print-btn,
+      .related-link-wrap {
+        display: none !important;
+      }
+
+      /* Slide-behållaren: statisk, skalbar */
+      #slide-container {
+        width: 297mm !important;
+        height: auto !important;
+        position: static !important;
+        overflow: visible !important;
+        max-width: none !important;
+      }
+
+      /* Varje slide: visa alla, bryt sida efter varje */
+      .slide {
+        display: flex !important;
+        opacity: 1 !important;
+        position: relative !important;
+        inset: auto !important;
+        width: 297mm !important;
+        height: 167mm !important;
+        page-break-after: always;
+        break-after: page;
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+
+      /* Ingen extra sida efter sista sliden */
+      .slide:last-child {
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+
+      /* -------------------------------------------------------
+         UTSKRIFTSFIX FÖR TITELSLIDES (slide 1 och slide 14)
+         Problemet: clamp()-värden med vw/vh beräknas mot sidans
+         mått (297mm ≈ 1122px) i print, vilket ger mycket större
+         fonter än på skärm. closing-grid-kolumnerna räcker inte
+         till och text som "71 975 tkr" radbryts och spränger
+         layouten. Lösning: fasta, lägre fontstorlekar för print.
+         ------------------------------------------------------- */
+      .slide-title {
+        padding: 5% 7% !important;
+      }
+
+      .slide-title .pre-title {
+        font-size: 10px !important;
+        margin-bottom: 8px !important;
+      }
+
+      .slide-title h1 {
+        font-size: 30px !important;
+        margin-bottom: 8px !important;
+      }
+
+      .slide-title .subtitle {
+        font-size: 13px !important;
+        margin-bottom: 10px !important;
+        line-height: 1.4 !important;
+      }
+
+      .slide-title .meta-chip {
+        font-size: 10px !important;
+        padding: 3px 10px !important;
+      }
+
+      /* closing-grid: full bredd, reducerade fonter */
+      .slide-title .closing-grid {
+        max-width: 100% !important;
+        gap: 8px !important;
+        margin-top: 12px !important;
+      }
+
+      .slide-title .closing-box {
+        padding: 8px 10px !important;
+      }
+
+      .slide-title .closing-box .cb-val {
+        font-size: 16px !important;
+        line-height: 1.2 !important;
+        white-space: nowrap;
+      }
+
+      .slide-title .closing-box .cb-lbl {
+        font-size: 9px !important;
+        margin-top: 2px !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -685,6 +838,11 @@
           Se även: Finansiellt utrymme 2027–2031 →
         </a>
       </div>
+
+      <!-- Utskriftsknapp: en sida per bild, dold vid utskrift -->
+      <button class="print-btn" onclick="window.print()" title="Skriv ut presentationen (en bild per sida)">
+        Skriv ut presentation
+      </button>
     </div>
 
     <!-- ======================================================
@@ -1400,10 +1558,15 @@
           <div class="cb-lbl">Totalt i budgetskrivelsen</div>
         </div>
       </div>
-      <div style="margin-top: clamp(12px,2.5vh,30px); color: rgba(255,255,255,0.25); font-size: clamp(8px,1vw,12px); font-style: italic;">
+      <div style="margin-top: clamp(12px,2.5vh,30px); color: rgba(0,0,0,0.3); font-size: clamp(8px,1vw,12px); font-style: italic;">
         Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, daterad 2026-03-10.<br>
         Kultur- och fritidsnämnden. Tillgänglig: www.kentlundgren.se
       </div>
+
+      <!-- Utskriftsknapp: en sida per bild, dold vid utskrift -->
+      <button class="print-btn" onclick="window.print()" title="Skriv ut presentationen (en bild per sida)">
+        Skriv ut presentation
+      </button>
     </div>
 
   </div><!-- /slide-container -->
