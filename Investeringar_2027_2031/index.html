@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investeringar 2027–2031 · Kultur- och fritidsnämnden · Simrishamns kommun</title>
+
+  <!-- ============================================================
+       PRESENTATION: Budgetskrivelse för investeringar 2027–2031
+       Organisation: Kultur- och fritidsnämnden, Simrishamns kommun
+       Källa: Simrishamns kommun (2026). Budgetskrivelse för
+              investeringar 2027–2031, 2026-03-10.
+       Antal slides: 14
+       Teknik: Ren HTML5 / CSS3 / Vanilla JavaScript – en fil.
+       Navigering: Piltangenter ← → eller klick på knapparna.
+       Fullskärm: Klicka på ⛶-knappen eller tryck F (f-tangent).
+  ============================================================ -->
+
+  <style>
+
+    /* -------------------------------------------------------
+       1. ÅTERSTÄLLNING & GRUNDINSTÄLLNINGAR
+       ------------------------------------------------------- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #1a1a1a;
+      font-family: 'Georgia', 'Palatino Linotype', serif;
+      overflow: hidden;   /* Förhindra scrollning — presentation är fullskärm */
+    }
+
+    /* -------------------------------------------------------
+       2. PRESENTATIONSRAM
+       Centrerar slidearna och håller 16:9-format.
+       ------------------------------------------------------- */
+    #presentation {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #111;
+      position: relative;
+    }
+
+    /* -------------------------------------------------------
+       3. PROGRESSBAR
+       Visar hur långt i presentationen man befinner sig.
+       Fylls proportionellt baserat på aktuell slide / totalt.
+       ------------------------------------------------------- */
+    #progress-bar-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      z-index: 100;
+    }
+
+    #progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #C0392B, #E8693A, #F0A030);
+      transition: width 0.35s ease;
+    }
+
+    /* -------------------------------------------------------
+       4. SLIDE-BEHÅLLARE
+       Använder aspect-ratio 16:9 och skalar med vw/vh.
+       Max-bredd 1400px för mycket breda skärmar.
+       ------------------------------------------------------- */
+    #slide-container {
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+      max-width: 1400px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* -------------------------------------------------------
+       5. ENSKILD SLIDE
+       Varje slide är position:absolute och täcker hela ytan.
+       Synlig slide har opacity:1, övriga opacity:0 + display:none.
+       ------------------------------------------------------- */
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;           /* Dold som standard */
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .slide.active {
+      display: flex;           /* Visas när aktiv */
+      flex-direction: column;
+      opacity: 1;
+    }
+
+    /* -------------------------------------------------------
+       6. NAVIGATIONSKNAPPAR
+       Placerade på vardera sida om sliden.
+       ------------------------------------------------------- */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.08);
+      border: 0.5px solid rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: clamp(16px, 2.5vw, 28px);
+      width: clamp(32px, 4vw, 52px);
+      height: clamp(48px, 7vw, 80px);
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      user-select: none;
+    }
+
+    .nav-btn:hover { background: rgba(255,255,255,0.18); }
+
+    #btn-prev { left: clamp(4px, 1vw, 16px); }
+    #btn-next { right: clamp(4px, 1vw, 16px); }
+
+    /* -------------------------------------------------------
+       7. VERKTYGSFÄLT (slide-räknare + fullskärmsknapp)
+       ------------------------------------------------------- */
+    #toolbar {
+      position: absolute;
+      bottom: clamp(4px, 1vh, 14px);
+      right: clamp(8px, 1.5vw, 20px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    #slide-counter-display {
+      color: rgba(255,255,255,0.4);
+      font-family: 'Courier New', monospace;
+      font-size: clamp(9px, 1.2vw, 13px);
+    }
+
+    #btn-fullscreen {
+      background: rgba(255,255,255,0.07);
+      border: 0.5px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.55);
+      font-size: clamp(12px, 1.6vw, 18px);
+      width: clamp(26px, 3vw, 38px);
+      height: clamp(26px, 3vw, 38px);
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    #btn-fullscreen:hover { background: rgba(255,255,255,0.15); }
+
+    /* ================================================================
+       SLIDE-SPECIFIK STYLING
+       Nedan följer stilar för respektive slide-typ:
+         - .slide-title    : Öppnings- och avslutningsbilder
+         - .slide-invest   : Investeringsslides (Variant C1-layout)
+         - .slide-summary  : Sammanfattning 2028–2031
+       ================================================================ */
+
+    /* -------------------------------------------------------
+       8. TITELSLIDE (slide 1 och slide 14)
+       UPPDATERING: Bakgrund ändrad från mörk (#1a1a1a) till vit (#fff),
+       all text ändrad till mörka färger, teckenstorlekar ökade genomgående.
+       ------------------------------------------------------- */
+    .slide-title {
+      background: #fff;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6%;
+    }
+
+    /* Accentlinje under titeln */
+    .slide-title .accent-line {
+      width: clamp(40px, 8vw, 100px);
+      height: 4px;
+      background: linear-gradient(90deg, #C0392B, #E8693A, #F0A030);
+      border-radius: 2px;
+      margin: 0 auto clamp(12px, 2.5vh, 30px);
+    }
+
+    .slide-title .pre-title {
+      color: rgba(0,0,0,0.45);
+      font-family: 'Courier New', monospace;
+      font-size: clamp(12px, 1.6vw, 18px);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: clamp(8px, 1.5vh, 18px);
+    }
+
+    .slide-title h1 {
+      color: #1a1a1a;
+      font-size: clamp(24px, 5vw, 62px);
+      font-weight: normal;
+      line-height: 1.2;
+      margin-bottom: clamp(8px, 1.5vh, 20px);
+    }
+
+    .slide-title .subtitle {
+      color: rgba(0,0,0,0.55);
+      font-size: clamp(14px, 2.2vw, 26px);
+      line-height: 1.6;
+      margin-bottom: clamp(16px, 3vh, 40px);
+    }
+
+    /* Metadata-rutor på titelsliden */
+    .slide-title .meta-row {
+      display: flex;
+      gap: clamp(8px, 1.5vw, 20px);
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: clamp(12px, 2vh, 30px);
+    }
+
+    .slide-title .meta-chip {
+      background: rgba(0,0,0,0.05);
+      border: 0.5px solid rgba(0,0,0,0.15);
+      color: rgba(0,0,0,0.6);
+      font-size: clamp(11px, 1.5vw, 17px);
+      padding: clamp(4px, 0.6vh, 8px) clamp(10px, 1.5vw, 18px);
+      border-radius: 4px;
+    }
+
+    /* Avslutningsslidets extra-element */
+    .slide-title .closing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(8px, 1.5vw, 20px);
+      margin-top: clamp(16px, 3vh, 40px);
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .slide-title .closing-box {
+      background: rgba(0,0,0,0.04);
+      border: 0.5px solid rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: clamp(8px, 1.5vh, 18px);
+      text-align: center;
+    }
+
+    .slide-title .closing-box .cb-val {
+      color: #C0392B;
+      font-size: clamp(16px, 3vw, 34px);
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+    }
+
+    .slide-title .closing-box .cb-lbl {
+      color: rgba(0,0,0,0.5);
+      font-size: clamp(10px, 1.3vw, 15px);
+      margin-top: 3px;
+    }
+
+    /* -------------------------------------------------------
+       9. INVESTERINGSSLIDE — VARIANT C1
+       Röd accentlinje top, sedan två kolumner:
+         Vänster: prioritet, rubrik, beskrivning
+         Höger:  faktakort (budget, status, konsekvens, fokus)
+       ------------------------------------------------------- */
+    .slide-invest {
+      background: #fff;
+    }
+
+    /* Den röda gradienten högst upp */
+    .slide-invest .acc {
+      height: clamp(4px, 0.7vh, 8px);
+      background: linear-gradient(90deg, #C0392B 0%, #E8693A 55%, #F0A030 100%);
+      flex-shrink: 0;
+    }
+
+    /* Tvåkolumnslayout */
+    .slide-invest .body {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+
+    /* ---- Vänster kolumn ---- */
+    .slide-invest .lc {
+      width: 52%;
+      padding: clamp(10px,3vh,30px) clamp(10px,2.5vw,28px) clamp(8px,2vh,22px) clamp(12px,3vw,36px);
+      display: flex;
+      flex-direction: column;
+      border-right: 0.5px solid rgba(0,0,0,0.08);
+    }
+
+    /* Rad med prioritetsmärke och slidräknare */
+    .slide-invest .meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: clamp(6px, 1.2vh, 14px);
+      flex-shrink: 0;
+    }
+
+    .slide-invest .prio {
+      background: #C0392B;
+      color: #fff;
+      font-size: clamp(8px, 1.1vw, 13px);
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      padding: clamp(2px,0.4vh,5px) clamp(8px,1.2vw,14px);
+      border-radius: 3px;
+      letter-spacing: 0.08em;
+      flex-shrink: 0;
+    }
+
+    .slide-invest .status-tag {
+      background: #F0F7F0;
+      color: #2E6E40;
+      border: 0.5px solid rgba(46,110,64,0.25);
+      font-size: clamp(7px, 1vw, 11px);
+      padding: clamp(2px,0.3vh,4px) clamp(6px,0.9vw,10px);
+      border-radius: 3px;
+    }
+
+    .slide-invest .status-tag.ny {
+      background: #EFF5FF;
+      color: #185FA5;
+      border-color: rgba(24,95,165,0.25);
+    }
+
+    .slide-invest .cnt {
+      color: #bbb;
+      font-size: clamp(8px, 1vw, 12px);
+      font-family: 'Courier New', monospace;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* Rubrik — gjord stor för läsbarhet på distans */
+    /* UPPDATERING: Ökad teckenstorlek ytterligare till clamp(22px,4.5vw,52px) för att fylla mer av slidens yta */
+    .slide-invest h1 {
+      color: #1a1a1a;
+      font-size: clamp(22px, 4.5vw, 52px);
+      font-weight: normal;
+      margin: 0 0 clamp(8px, 1.5vh, 18px);
+      line-height: 1.2;
+      flex-shrink: 0;
+    }
+
+    /* Beskrivningstext */
+    /* UPPDATERING: Ökad teckenstorlek ytterligare till clamp(16px,2.8vw,30px) för att fylla mer av slidens yta */
+    .slide-invest .desc {
+      color: #333;
+      font-size: clamp(16px, 2.8vw, 30px);
+      line-height: 1.75;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Sidfot i vänster kolumn */
+    .slide-invest .org {
+      color: #c0c0c0;
+      font-size: clamp(7px, 0.9vw, 11px);
+      margin-top: auto;
+      padding-top: clamp(4px, 0.8vh, 10px);
+      border-top: 0.5px solid rgba(0,0,0,0.06);
+      font-style: italic;
+      flex-shrink: 0;
+    }
+
+    /* ---- Höger kolumn ---- */
+    .slide-invest .rc {
+      flex: 1;
+      padding: clamp(10px,2.5vh,26px) clamp(12px,2.8vw,32px) clamp(8px,2vh,22px) clamp(10px,2.2vw,24px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(6px, 1.2vh, 14px);
+    }
+
+    /* Faktakort — rubrik i rött, värde stort, sublabel litet */
+    .slide-invest .box {
+      background: #F9F7F4;
+      border-radius: clamp(5px, 0.8vw, 10px);
+      padding: clamp(7px, 1.3vh, 16px) clamp(8px, 1.5vw, 18px);
+      border-left: 4px solid #C0392B;
+      flex-shrink: 0;
+    }
+
+    /* UPPDATERING: Höger kolumn — alla teckenstorlekar ökade för att fylla mer av slidens yta */
+    .slide-invest .bt {
+      color: #C0392B;
+      font-size: clamp(9px, 1.3vw, 15px);
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: clamp(2px, 0.4vh, 5px);
+    }
+
+    .slide-invest .bv {
+      color: #1a1a1a;
+      font-size: clamp(16px, 2.8vw, 32px);
+      font-weight: bold;
+      line-height: 1.2;
+    }
+
+    .slide-invest .bs {
+      color: #888;
+      font-size: clamp(10px, 1.4vw, 16px);
+      margin-top: clamp(2px, 0.3vh, 4px);
+      line-height: 1.4;
+    }
+
+    /* Varningsruta — konsekvens vid utebliven investering */
+    .slide-invest .warn {
+      background: #FFF8F0;
+      border: 0.5px solid rgba(240,160,48,0.4);
+      border-radius: clamp(5px, 0.8vw, 10px);
+      padding: clamp(7px, 1.3vh, 16px) clamp(8px, 1.5vw, 18px);
+      flex-shrink: 0;
+    }
+
+    .slide-invest .wt {
+      color: #C05A10;
+      font-size: clamp(9px, 1.3vw, 15px);
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: clamp(2px, 0.4vh, 5px);
+    }
+
+    /* UPPDATERING: Varningstext ökad från clamp(9px,1.3vw,15px) till clamp(12px,1.8vw,20px) */
+    .slide-invest .wb {
+      color: #444;
+      font-size: clamp(12px, 1.8vw, 20px);
+      line-height: 1.55;
+    }
+
+    /* Fokusområdes-chips */
+    .slide-invest .focus-wrap { flex-shrink: 0; }
+
+    .slide-invest .focus-title {
+      color: #999;
+      font-size: clamp(9px, 1.2vw, 13px);
+      font-family: 'Courier New', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: clamp(3px, 0.5vh, 6px);
+    }
+
+    .slide-invest .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(3px, 0.5vw, 6px);
+    }
+
+    .slide-invest .chip {
+      background: #FFF0EC;
+      color: #C0392B;
+      font-size: clamp(9px, 1.2vw, 14px);
+      padding: clamp(3px, 0.5vh, 6px) clamp(8px, 1.2vw, 14px);
+      border-radius: 3px;
+      border: 0.5px solid rgba(192,57,43,0.2);
+    }
+
+    /* -------------------------------------------------------
+       10. SAMMANFATTNINGSSLIDE (2028–2031)
+       ------------------------------------------------------- */
+    .slide-summary {
+      background: #fff;
+    }
+
+    .slide-summary .acc {
+      height: clamp(4px, 0.7vh, 8px);
+      background: linear-gradient(90deg, #C0392B 0%, #E8693A 55%, #F0A030 100%);
+      flex-shrink: 0;
+    }
+
+    .slide-summary .s-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(10px, 2.5vh, 28px) clamp(12px, 3vw, 36px) clamp(8px, 2vh, 20px);
+      min-height: 0;
+    }
+
+    .slide-summary .s-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: clamp(8px, 1.5vh, 18px);
+      flex-shrink: 0;
+    }
+
+    /* UPPDATERING: Alla teckenstorlekar på sammanfattningssliden ökade */
+    .slide-summary h1 {
+      color: #1a1a1a;
+      font-size: clamp(18px, 3.5vw, 42px);
+      font-weight: normal;
+    }
+
+    .slide-summary .s-cnt {
+      color: #bbb;
+      font-size: clamp(10px, 1.3vw, 15px);
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Rutnät med investeringskort 2028-2031 */
+    .slide-summary .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(7px, 1.2vw, 16px);
+      flex: 1;
+      min-height: 0;
+    }
+
+    .slide-summary .inv-card {
+      background: #F9F7F4;
+      border-radius: clamp(5px, 0.8vw, 10px);
+      padding: clamp(10px, 1.8vh, 20px) clamp(10px, 1.8vw, 22px);
+      border-left: 3px solid #C0392B;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(4px, 0.7vh, 8px);
+      overflow: hidden;
+    }
+
+    .slide-summary .ic-prio {
+      background: #C0392B;
+      color: #fff;
+      font-size: clamp(9px, 1.2vw, 14px);
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      padding: 2px 8px;
+      border-radius: 2px;
+      align-self: flex-start;
+      letter-spacing: 0.06em;
+    }
+
+    .slide-summary .ic-name {
+      color: #1a1a1a;
+      font-size: clamp(13px, 1.8vw, 21px);
+      font-weight: bold;
+      line-height: 1.2;
+    }
+
+    .slide-summary .ic-year {
+      color: #888;
+      font-size: clamp(10px, 1.3vw, 15px);
+      font-family: 'Courier New', monospace;
+    }
+
+    .slide-summary .ic-budget {
+      color: #C0392B;
+      font-size: clamp(13px, 1.8vw, 21px);
+      font-weight: bold;
+      margin-top: auto;
+      padding-top: 4px;
+    }
+
+    .slide-summary .s-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: clamp(4px, 0.8vh, 10px);
+      border-top: 0.5px solid rgba(0,0,0,0.07);
+      flex-shrink: 0;
+      margin-top: clamp(6px, 1.2vh, 14px);
+    }
+
+    .slide-summary .s-total {
+      color: #C0392B;
+      font-size: clamp(14px, 2vw, 24px);
+      font-weight: bold;
+    }
+
+    .slide-summary .s-org {
+      color: #c0c0c0;
+      font-size: clamp(9px, 1.1vw, 13px);
+      font-style: italic;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     PRESENTATIONSRAMEN — allt bor här inne
+============================================================ -->
+<div id="presentation">
+
+  <!-- Progressbar längst upp -->
+  <div id="progress-bar-bg">
+    <div id="progress-bar-fill" style="width: 7.14%"></div>
+  </div>
+
+  <!-- Slide-behållare: alla 14 slides läggs här -->
+  <div id="slide-container">
+
+    <!-- ======================================================
+         SLIDE 1 — INLEDNINGSBILD
+    ====================================================== -->
+    <div class="slide slide-title active" data-slide="1">
+      <div class="pre-title">Simrishamns kommun · Kultur- och fritidsnämnden</div>
+      <div class="accent-line"></div>
+      <h1>Budgetskrivelse<br>för investeringar<br>2027–2031</h1>
+      <div class="subtitle">
+        Prioriterade investeringsprojekt för Kultur- och fritidsnämnden<br>
+        Beslutad ordning · Budget år 2027 och planperiod 2028–2031
+      </div>
+      <div class="meta-row">
+        <span class="meta-chip">11+1 investeringsprojekt</span>
+        <span class="meta-chip">37 525 tkr budget 2027</span>
+        <span class="meta-chip">71 975 tkr totalt 2027–2031</span>
+        <span class="meta-chip">Daterad 2026-03-10</span>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 2 — PRIORITET 1
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="2">
+      <div class="acc"></div>
+      <div class="body">
+        <!-- Vänster kolumn: rubrik och beskrivning -->
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 1</span>
+            <span class="status-tag">● Pågående</span>
+            <span class="cnt">Bild 2 av 14</span>
+          </div>
+          <h1>Utrustning uppstart Korsavads&shy;anläggningen</h1>
+          <p class="desc">
+            Efter den omfattande renoveringen av Korsavadsanläggningen och
+            flera års entreprenörsdrift ska verksamheten nu starta upp i
+            kommunens egen regi. Inventarier köps in till simhall,
+            bowlinghall, skyttehall och entré. Exempel på utrustning:
+            speedgate till entrén, städmaskiner till badet, oljemaskin
+            till bowlinghallen samt linvagnar till simlinor. Det är av
+            yttersta vikt att ha en ansvarig för anläggningarna för att
+            säkerställa inköp och framtida drift.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <!-- Höger kolumn: faktakort -->
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget 2027 / 2028</div>
+            <div class="bv">1 000 tkr / 500 tkr</div>
+            <div class="bs">Total projektkalkyl: 5 000 tkr · Genomförandeperiod: 2026–2028</div>
+          </div>
+          <div class="box">
+            <div class="bt">Driftseffekt</div>
+            <div class="bv">+100 tkr/år</div>
+            <div class="bs">Service och underhåll. Finansieras ej inom befintlig driftram.</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Anläggningen kan inte öppna efter renoveringen. Barn kan inte nyttja simhall, bowling eller skyttehall via föreningsliv, skolor eller allmänhetens tid.</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">3 · Kunskap &amp; lärande</span>
+              <span class="chip">10 · Hälsa &amp; välbefinnande</span>
+              <span class="chip">13 · Kultur, friluftsliv &amp; turism</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 3 — PRIORITET 2
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="3">
+      <div class="acc"></div>
+      <div class="body">
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 2</span>
+            <span class="status-tag ny">● Ny</span>
+            <span class="cnt">Bild 3 av 14</span>
+          </div>
+          <h1>Valfisken inklusive gamingrum</h1>
+          <p class="desc">
+            Foajén i Valfisken är eftersatt och otrivsam, trots att den
+            är en central mötesyta för ungdomsverksamheten, biblioteket
+            och kulturskolan. Investeringen syftar till att renovera
+            foajéns gemensamma ytor och etablera ett gamingrum på
+            Benka Di — en strukturerad, trygg arena för digital fritid
+            med bemanning och tydliga regler. Satsningen stärker
+            tillgänglighet, trygghet och delaktighet för barn och unga
+            och ger kommunen en efterfrågad arena för organiserat spelande.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget 2027 / 2028</div>
+            <div class="bv">1 450 tkr / 750 tkr</div>
+            <div class="bs">Total projektkalkyl: 2 200 tkr · Genomförandeperiod: 2027–2028</div>
+          </div>
+          <div class="box">
+            <div class="bt">Driftseffekt</div>
+            <div class="bv">Inga driftseffekter</div>
+            <div class="bs">Finansieras inom befintlig driftram: Ja</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Minskad attraktivitet och färre besök. Eftersatt miljö påverkar kommunens varumärke. Ungdomars behov av organiserad digital fritid kan inte mötas.</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">3 · Kunskap &amp; lärande</span>
+              <span class="chip">10 · Hälsa</span>
+              <span class="chip">11 · Trygghet</span>
+              <span class="chip">13 · Kultur &amp; turism</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 4 — PRIORITET 3
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="4">
+      <div class="acc"></div>
+      <div class="body">
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 3</span>
+            <span class="status-tag">● Pågående</span>
+            <span class="cnt">Bild 4 av 14</span>
+          </div>
+          <h1>Ombyggnad &amp; tillgängliggörande Hafreborg</h1>
+          <p class="desc">
+            Etapp 6 (2027): Biografrummet flyttas till det runda rummet
+            i Rian (våning 2) med ny teknik och möblemang. På våning 1
+            byggs en ny varaktig utställning om Österlens förhistoria —
+            med modern teknik, interaktiva lösningar och säkra montrar
+            för de mest ömtåliga fynden. En modern utställning stärker
+            kommunens attraktionskraft och lockar turister från Sverige
+            och övriga världen. Etapp 7 (2028): VR-utrustning köps in
+            för en mer engagerande lärandemiljö för barn och unga.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget 2027 / 2028</div>
+            <div class="bv">400 tkr / 100 tkr</div>
+            <div class="bs">Total projektkalkyl: 4 024 tkr · Genomförandeperiod: 2017–2028</div>
+          </div>
+          <div class="box">
+            <div class="bt">Driftseffekt</div>
+            <div class="bv">Inga driftseffekter</div>
+            <div class="bs">Finansieras inom befintlig driftram: Ja</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Minskad tillgänglighet till museet. Verksamheten når inte nya målgrupper. Barn och unga får inte del av kulturarvet på ett modernt och likvärdigt vis.</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">3 · Kunskap</span>
+              <span class="chip">7 · Jämlikhet</span>
+              <span class="chip">10 · Hälsa</span>
+              <span class="chip">11 · Trygghet</span>
+              <span class="chip">13 · Kultur &amp; turism</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 5 — PRIORITET 4
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="5">
+      <div class="acc"></div>
+      <div class="body">
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 4</span>
+            <span class="status-tag">● Pågående</span>
+            <span class="cnt">Bild 5 av 14</span>
+          </div>
+          <h1>Tillgängliggörande &amp; digitalisering av magasinet Garvaren</h1>
+          <p class="desc">
+            Projektet tillgängliggör och digitaliserar museets samlingar
+            i magasinet Garvaren. Digitaliseringen ger den digitala
+            generationen tillgång till kulturarvet på sin arena och gör
+            det möjligt att nå barn och unga via digitala kanaler.
+            Samlingarna blir tillgängliga för fler, oavsett var man bor
+            eller vilka förutsättningar man har. Insatsen bidrar till
+            ökad kunskap om den lokala historien och möjliggör
+            pedagogiska upplevelser på distans.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget 2027 / 2028</div>
+            <div class="bv">150 tkr / 100 tkr</div>
+            <div class="bs">Total projektkalkyl: 2 975 tkr · Genomförandeperiod: 2017–2028</div>
+          </div>
+          <div class="box">
+            <div class="bt">Status &amp; finansiering</div>
+            <div class="bv">Pågående projekt</div>
+            <div class="bs">Finansieras inom befintlig driftram</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Barn och ungas möjlighet att ta del av museets samlingar digitalt minskar. Den digitala generationen missar kulturarvet på sin arena.</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">3 · Kunskap &amp; lärande</span>
+              <span class="chip">17 · Partnerskap &amp; samverkan</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 6 — PRIORITET 5
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="6">
+      <div class="acc"></div>
+      <div class="body">
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 5</span>
+            <span class="status-tag ny">● Nytt</span>
+            <span class="cnt">Bild 6 av 14</span>
+          </div>
+          <h1>Tillgängligt museum</h1>
+          <p class="desc">
+            En genomlysning genomförs för att tillgänglighetsanpassa
+            entréer, hissar, trapphus, skyltning och befintliga
+            utställningar utifrån husens möjligheter och museets profil.
+            Målet är en sammanhållen och inkluderande miljö där alla
+            besökare — oavsett funktionsförmåga — kan ta del av
+            kulturarvet på ett likvärdigt sätt. Insatsen ökar museets
+            tillgänglighet och möjliggör att verksamheten når
+            nya målgrupper som i dag inte kan besöka museet.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget 2027 / 2028</div>
+            <div class="bv">250 tkr / 100 tkr</div>
+            <div class="bs">Total projektkalkyl: 350 tkr · Genomförandeperiod: 2027–2028</div>
+          </div>
+          <div class="box">
+            <div class="bt">Status &amp; finansiering</div>
+            <div class="bv">Nytt projekt</div>
+            <div class="bs">Finansieras inom befintlig driftram</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Tillgängligheten till museet ökar inte. Verksamheten kan inte nå nya målgrupper och kan inte fullt ut fullgöra sin pedagogiska uppgift på ett likvärdigt vis.</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">2 · Icke-diskriminering</span>
+              <span class="chip">3 · Kunskap &amp; lärande</span>
+              <span class="chip">31 · Rätt till kulturliv</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 7 — PRIORITET 6
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="7">
+      <div class="acc"></div>
+      <div class="body">
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 6</span>
+            <span class="status-tag">● Pågående</span>
+            <span class="cnt">Bild 7 av 14</span>
+          </div>
+          <h1>Digitalisering av bibliotek</h1>
+          <p class="desc">
+            En löpande och kontinuerlig satsning på digitalisering av
+            bibliotekets tjänster och samlingar. Investeringen syftar
+            till att möta invånarnas förändrade behov av digital tillgång
+            till biblioteksresurser, stärka bibliotekets roll som
+            kunskaps- och informationsnav i kommunen och säkerställa
+            att alla invånare — oavsett var de bor — har tillgång till
+            biblioteket och dess tjänster. Satsningen är löpande och
+            återkommer varje år under planperioden.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget — löpande varje år</div>
+            <div class="bv">150 tkr/år</div>
+            <div class="bs">2027: 150 tkr · 2028: 150 tkr · 2029: 150 tkr · 2030: 150 tkr · 2031: 150 tkr</div>
+          </div>
+          <div class="box">
+            <div class="bt">Projektnummer &amp; status</div>
+            <div class="bv">Projekt 6290 · Pågående</div>
+            <div class="bs">Löpande investering under hela planperioden</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Bibliotekets digitala tjänster tappar i relevans och tillgänglighet. Invånare utan tillgång till fysiska bibliotek missgynnas i sin rätt till information och kunskap.</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">3 · Kunskap &amp; lärande</span>
+              <span class="chip">10 · Hälsa &amp; välbefinnande</span>
+              <span class="chip">13 · Kultur &amp; turism</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 8 — PRIORITET 7
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="8">
+      <div class="acc"></div>
+      <div class="body">
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 7</span>
+            <span class="status-tag ny">● Nytt</span>
+            <span class="cnt">Bild 8 av 14</span>
+          </div>
+          <h1>Nya lokaler Tobisviksbadet</h1>
+          <p class="desc">
+            Tobisviksbadet byggdes på 1960-talet och servicebyggnaderna —
+            med kiosk, omklädningsrum och restaurang — har inte
+            renoverats sedan dess. Underhållet är kraftigt eftersatt
+            och lokalerna uppfyller inte dagens krav. Förvaltningen
+            har tagit fram ett förslag på nya lokaler som också
+            inkluderar möjlighet till bastu och havsbad hela året,
+            vilket förlänger säsongen och ökar badplatsens attraktivitet
+            avsevärt för kommunens invånare och turister.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget 2027</div>
+            <div class="bv">22 000 tkr</div>
+            <div class="bs">Årets i särklass största enskilda investering · Genomförandeperiod: 2027–2028</div>
+          </div>
+          <div class="box">
+            <div class="bt">Status &amp; finansiering</div>
+            <div class="bv">Nytt projekt</div>
+            <div class="bs">Finansiering ej klarlagd inom befintlig ram</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Badplatsen kan fortsatt bara nyttjas en begränsad del av året. Eftersatta servicebyggnader försämrar upplevelsen och minskar barns möjlighet till rekreation (Barnkonventionen art. 31).</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">10 · Hälsa &amp; välbefinnande</span>
+              <span class="chip">13 · Kultur, friluftsliv &amp; turism</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 9 — PRIORITET 8
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="9">
+      <div class="acc"></div>
+      <div class="body">
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 8</span>
+            <span class="status-tag ny">● Nytt</span>
+            <span class="cnt">Bild 9 av 14</span>
+          </div>
+          <h1>Ny konstgräsplan Korsavad</h1>
+          <p class="desc">
+            Projektet ersätter den befintliga konstgräsplanen på
+            Korsavads IP med ett modernt konstgrässystem anpassat för
+            dagens krav på funktion, slitstyrka och användning.
+            Planen används dagligen av det lokala föreningslivet,
+            kommunens skolor samt Malmö FF:s akademiverksamhet.
+            Planens kringliggande funktioner ses också över i
+            samband med bytet. En ny plan säkerställer att
+            skolundervisning och akademiverksamheten kan fortsätta
+            bedrivas på platsen och att barn och unga får tillgång
+            till en säker och ändamålsenlig idrottsyta.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget 2027</div>
+            <div class="bv">10 000 tkr</div>
+            <div class="bs">Total projektkalkyl: 10 000 tkr · Genomförandeperiod: 2027–2028</div>
+          </div>
+          <div class="box">
+            <div class="bt">Driftseffekt</div>
+            <div class="bv">Inga driftseffekter</div>
+            <div class="bs">Finansieras ej inom befintlig driftram</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Planen fortsätter försämras. Skolundervisning och Malmö FF:s akademiverksamhet kan ej bedrivas på platsen. Barns rätt till fysisk aktivitet begränsas (art. 6, 24 och 31).</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">3 · Kunskap &amp; lärande</span>
+              <span class="chip">10 · Hälsa &amp; välbefinnande</span>
+              <span class="chip">13 · Kultur, friluftsliv &amp; turism</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 10 — PRIORITET 9
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="10">
+      <div class="acc"></div>
+      <div class="body">
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 9</span>
+            <span class="status-tag">● Pågående</span>
+            <span class="cnt">Bild 10 av 14</span>
+          </div>
+          <h1>Konstnärlig utsmyckning</h1>
+          <p class="desc">
+            En löpande och återkommande investering i konstnärlig
+            utsmyckning av kommunens offentliga miljöer. Satsningen
+            bidrar till att stärka Simrishamns identitet som
+            konstkommun, berika de offentliga miljöerna för invånare
+            och besökare samt stödja lokala och regionala konstnärer.
+            Konst i det offentliga rummet bidrar till trivsel,
+            stolthet och attraktivitet — en mjuk men tydlig signal
+            om kommunens kulturambitioner. Projektnummer 6155.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget — löpande varje år</div>
+            <div class="bv">500 tkr/år</div>
+            <div class="bs">Projektnr 6155 · 2027–2031: totalt 2 500 tkr</div>
+          </div>
+          <div class="box">
+            <div class="bt">Status &amp; finansiering</div>
+            <div class="bv">Pågående · Löpande</div>
+            <div class="bs">Återkommande investering under hela planperioden</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Kommunens offentliga miljöer tappar i kvalitet och attraktivitet. Konstnärers möjlighet att synas i och bidra till det lokala samhället minskar.</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">7 · Jämlikhet &amp; jämställdhet</span>
+              <span class="chip">10 · Hälsa &amp; välbefinnande</span>
+              <span class="chip">13 · Hållbar kultur &amp; turism</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 11 — PRIORITET 10
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="11">
+      <div class="acc"></div>
+      <div class="body">
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 10</span>
+            <span class="status-tag">● Pågående</span>
+            <span class="cnt">Bild 11 av 14</span>
+          </div>
+          <h1>Konstinköp till kommunens konstsamling</h1>
+          <p class="desc">
+            Simrishamns kommun köper varje år in konst från konstnärer
+            och gallerier. Satsningen stödjer konstnärers karriärutveckling
+            och ger dem synlighet i offentliga sammanhang. Att kommunen
+            köper in konst fungerar som en kvalitetsstämpel och ett
+            erkännande av konstnärens arbete. Kommunens konstsamling
+            berikar de kommunala lokalerna och bidrar till en mer
+            inspirerande och trivsam arbetsmiljö för medarbetare och
+            besökare. Projektnummer 6011.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget — löpande varje år</div>
+            <div class="bv">125 tkr/år</div>
+            <div class="bs">Projektnr 6011 · 2027–2031: totalt 625 tkr</div>
+          </div>
+          <div class="box">
+            <div class="bt">Status &amp; finansiering</div>
+            <div class="bv">Pågående · Löpande</div>
+            <div class="bs">Återkommande investering under hela planperioden</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Konstsamlingen slutar växa. Kommunens stöd till det lokala konstnärslivet upphör. De kommunala miljöerna tappar i kvalitet och inspirationsvärde.</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">7 · Jämlikhet &amp; jämställdhet</span>
+              <span class="chip">10 · Hälsa &amp; välbefinnande</span>
+              <span class="chip">13 · Hållbar kultur &amp; turism</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 12 — PRIORITET 11
+    ====================================================== -->
+    <div class="slide slide-invest" data-slide="12">
+      <div class="acc"></div>
+      <div class="body">
+        <div class="lc">
+          <div class="meta">
+            <span class="prio">PRIORITET 11</span>
+            <span class="status-tag ny">● Ny</span>
+            <span class="cnt">Bild 12 av 14</span>
+          </div>
+          <h1>Uppgradera verkstaden på Garvaren</h1>
+          <p class="desc">
+            Iordningsställande av verkstaden i museimagasinet Garvaren
+            för att möjliggöra byggande av egna utställningar och
+            vandringsutställningar. Den befintliga verkstaden kompletteras
+            med verktyg, maskiner och säkerhetsinstallationer. En dörr
+            för in- och urlastning med truck installeras. Verkstaden
+            kan även nyttjas i all verksamhet inom Kultur- och
+            fritidsförvaltningen, vilket ger en samlad och effektiv
+            resurs för hela förvaltningen.
+          </p>
+          <div class="org">
+            Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.
+          </div>
+        </div>
+        <div class="rc">
+          <div class="box">
+            <div class="bt">Budget 2027</div>
+            <div class="bv">300 tkr</div>
+            <div class="bs">Total projektkalkyl: 300 tkr · Engångsinvestering år 2027</div>
+          </div>
+          <div class="box">
+            <div class="bt">Status &amp; driftseffekt</div>
+            <div class="bv">Nytt projekt</div>
+            <div class="bs">Inga driftseffekter. Finansieras ej inom befintlig driftram.</div>
+          </div>
+          <div class="warn">
+            <div class="wt">⚠ Konsekvens om ej genomförd</div>
+            <div class="wb">Möjligheten att bygga egna och vandringsutställningar kvarstår begränsad. Förvaltningen saknar fortsatt en ändamålsenlig och gemensam produktionsverkstad.</div>
+          </div>
+          <div class="focus-wrap">
+            <div class="focus-title">Fokusområden</div>
+            <div class="chips">
+              <span class="chip">3 · Kunskap &amp; lärande</span>
+              <span class="chip">8 · Hållbart samhällsbyggande</span>
+              <span class="chip">11 · Trygghet</span>
+              <span class="chip">13 · Kultur &amp; turism</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 13 — SAMMANFATTNING PLANPERIOD 2028–2031
+    ====================================================== -->
+    <div class="slide slide-summary" data-slide="13">
+      <div class="acc"></div>
+      <div class="s-body">
+        <div class="s-header">
+          <h1>Planperiod 2028–2031 — Kommande investeringar (prioritet 12–20)</h1>
+          <span class="s-cnt">Bild 13 av 14</span>
+        </div>
+        <div class="grid">
+          <div class="inv-card">
+            <span class="ic-prio">PRIO 12</span>
+            <div class="ic-name">Ny konstgräsplan Skillinge</div>
+            <div class="ic-year">Planerat år: 2028</div>
+            <div class="ic-budget">10 000 tkr</div>
+          </div>
+          <div class="inv-card">
+            <span class="ic-prio">PRIO 13</span>
+            <div class="ic-name">Bokbuss</div>
+            <div class="ic-year">Planerat år: 2029</div>
+            <div class="ic-budget">4 500 tkr</div>
+          </div>
+          <div class="inv-card">
+            <span class="ic-prio">PRIO 14</span>
+            <div class="ic-name">Hittbarhet &amp; tillgänglighet i museum och arkiv</div>
+            <div class="ic-year">Löpande: 2029–2031</div>
+            <div class="ic-budget">300 tkr</div>
+          </div>
+          <div class="inv-card">
+            <span class="ic-prio">PRIO 15</span>
+            <div class="ic-name">Sorteringsanläggning Biblioteket</div>
+            <div class="ic-year">Planerat år: 2030</div>
+            <div class="ic-budget">1 500 tkr</div>
+          </div>
+          <div class="inv-card">
+            <span class="ic-prio">PRIO 16</span>
+            <div class="ic-name">Kompaktsystem &amp; entresolvåning, Garvaren</div>
+            <div class="ic-year">2029–2030</div>
+            <div class="ic-budget">800 tkr</div>
+          </div>
+          <div class="inv-card">
+            <span class="ic-prio">PRIO 17</span>
+            <div class="ic-name">Iordningsställande &amp; besöksmålsanpassning Rian</div>
+            <div class="ic-year">2028–2029</div>
+            <div class="ic-budget">1 200 tkr</div>
+          </div>
+          <div class="inv-card">
+            <span class="ic-prio">PRIO 18</span>
+            <div class="ic-name">Basutställning Österlen</div>
+            <div class="ic-year">2030–2031 (invigning 2032)</div>
+            <div class="ic-budget">2 300 tkr</div>
+          </div>
+          <div class="inv-card">
+            <span class="ic-prio">PRIO 19</span>
+            <div class="ic-name">Belysning A-plan Korsavad</div>
+            <div class="ic-year">Planerat år: 2030</div>
+            <div class="ic-budget">1 400 tkr</div>
+          </div>
+          <div class="inv-card">
+            <span class="ic-prio">PRIO 20</span>
+            <div class="ic-name">Kulturbuss</div>
+            <div class="ic-year">Planerat år: 2028</div>
+            <div class="ic-budget">3 000 tkr</div>
+          </div>
+        </div>
+        <div class="s-footer">
+          <div>
+            <span class="s-total">Nya enskilda projekt 2028–2031: 29 075 tkr</span>
+            <span style="color:#bbb; font-size:clamp(8px,1vw,12px); margin-left:16px;">+ Reinvesteringar 6016: 4 800 tkr · Total planperiod 2027–2031: 71 975 tkr</span>
+          </div>
+          <div class="s-org">Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, 2026-03-10.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 14 — AVSLUTNINGSBILD
+    ====================================================== -->
+    <div class="slide slide-title" data-slide="14">
+      <div class="pre-title">Simrishamns kommun · Kultur- och fritidsnämnden</div>
+      <div class="accent-line"></div>
+      <h1>Sammanfattning</h1>
+      <div class="subtitle">
+        Investeringar 2027 · Totalt 11 projekt i prioritetsordning
+      </div>
+      <!-- Summakort med nyckeltal -->
+      <div class="closing-grid">
+        <div class="closing-box">
+          <div class="cb-val">37 525 tkr</div>
+          <div class="cb-lbl">Total budget år 2027</div>
+        </div>
+        <div class="closing-box">
+          <div class="cb-val">11 projekt</div>
+          <div class="cb-lbl">Med budget år 2027</div>
+        </div>
+        <div class="closing-box">
+          <div class="cb-val">71 975 tkr</div>
+          <div class="cb-lbl">Totalt 2027–2031</div>
+        </div>
+        <div class="closing-box">
+          <div class="cb-val">22 000 tkr</div>
+          <div class="cb-lbl">Största projekt (Tobisviksbadet)</div>
+        </div>
+        <div class="closing-box">
+          <div class="cb-val">9 projekt</div>
+          <div class="cb-lbl">Planeras 2028–2031</div>
+        </div>
+        <div class="closing-box">
+          <div class="cb-val">20 projekt</div>
+          <div class="cb-lbl">Totalt i budgetskrivelsen</div>
+        </div>
+      </div>
+      <div style="margin-top: clamp(12px,2.5vh,30px); color: rgba(255,255,255,0.25); font-size: clamp(8px,1vw,12px); font-style: italic;">
+        Källa: Simrishamns kommun (2026). Budgetskrivelse för investeringar 2027–2031, daterad 2026-03-10.<br>
+        Kultur- och fritidsnämnden. Tillgänglig: www.kentlundgren.se
+      </div>
+    </div>
+
+  </div><!-- /slide-container -->
+
+  <!-- Navigationsknappar -->
+  <button class="nav-btn" id="btn-prev" aria-label="Föregående bild">&#8592;</button>
+  <button class="nav-btn" id="btn-next" aria-label="Nästa bild">&#8594;</button>
+
+  <!-- Verktygsfält: slidräknare + fullskärmsknapp -->
+  <div id="toolbar">
+    <span id="slide-counter-display">1 / 14</span>
+    <button id="btn-fullscreen" aria-label="Fullskärm" title="Fullskärm (F)">&#x26F6;</button>
+  </div>
+
+</div><!-- /presentation -->
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     Allt logik för navigering, tangentbord och fullskärm.
+     Inga externa bibliotek används — ren Vanilla JS.
+============================================================ -->
+<script>
+
+  // -------------------------------------------------------
+  // 1. GRUNDKONSTANTER
+  // -------------------------------------------------------
+
+  /* Samla alla slide-element i en array */
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const totalSlides = slides.length;   /* = 14 */
+
+  /* Aktuell slidindex (0-baserat internt, 1-baserat i visning) */
+  let current = 0;
+
+  /* Referera till UI-element vi uppdaterar ofta */
+  const progressFill    = document.getElementById('progress-bar-fill');
+  const slideCounter    = document.getElementById('slide-counter-display');
+  const btnPrev         = document.getElementById('btn-prev');
+  const btnNext         = document.getElementById('btn-next');
+  const btnFullscreen   = document.getElementById('btn-fullscreen');
+  const presentation    = document.getElementById('presentation');
+
+  // -------------------------------------------------------
+  // 2. VISA EN SLIDE
+  // Döljer alla slides, visar den med angivet index.
+  // Uppdaterar progressbar och slidräknare.
+  // -------------------------------------------------------
+  function showSlide(index) {
+
+    /* Säkerhetsgräns — aldrig utanför [0, totalSlides-1] */
+    if (index < 0) index = 0;
+    if (index >= totalSlides) index = totalSlides - 1;
+
+    /* Ta bort .active från alla slides */
+    slides.forEach(s => s.classList.remove('active'));
+
+    /* Lägg till .active på vald slide */
+    slides[index].classList.add('active');
+
+    /* Spara aktuellt index */
+    current = index;
+
+    /* Räkna ut progressbarens bredd i procent.
+       Första sliden = 1/14 ≈ 7.14 %, sista = 100 % */
+    const pct = ((current + 1) / totalSlides) * 100;
+    progressFill.style.width = pct.toFixed(2) + '%';
+
+    /* Uppdatera slidräknaren i verktygsfältet */
+    slideCounter.textContent = (current + 1) + ' / ' + totalSlides;
+
+    /* Grå ut bakåt-knapp på första sliden,
+       och framåt-knapp på sista sliden */
+    btnPrev.style.opacity = (current === 0)                ? '0.25' : '1';
+    btnNext.style.opacity = (current === totalSlides - 1)  ? '0.25' : '1';
+  }
+
+  // -------------------------------------------------------
+  // 3. NAVIGERINGSFUNKTIONER
+  // -------------------------------------------------------
+
+  function goNext() {
+    if (current < totalSlides - 1) showSlide(current + 1);
+  }
+
+  function goPrev() {
+    if (current > 0) showSlide(current - 1);
+  }
+
+  // -------------------------------------------------------
+  // 4. KNAPPHÄNDELSER
+  // -------------------------------------------------------
+  btnNext.addEventListener('click', goNext);
+  btnPrev.addEventListener('click', goPrev);
+
+  /* Klick på slidecontainern (inte på nav-knappar) = nästa bild */
+  document.getElementById('slide-container').addEventListener('click', function(e) {
+    /* Ignorera klick på nav-knapparna */
+    if (e.target === btnPrev || e.target === btnNext) return;
+    goNext();
+  });
+
+  // -------------------------------------------------------
+  // 5. TANGENTBORDSSTYRNING
+  // Piltangenter: ← bakåt, → framåt
+  // F eller f: växla fullskärm
+  // Escape: lämna fullskärm (hanteras av webbläsaren automatiskt)
+  // Home: gå till första sliden
+  // End: gå till sista sliden
+  // -------------------------------------------------------
+  document.addEventListener('keydown', function(e) {
+
+    switch(e.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+      case 'PageDown':
+      case ' ':               /* Mellanslag = framåt */
+        e.preventDefault();
+        goNext();
+        break;
+
+      case 'ArrowLeft':
+      case 'ArrowUp':
+      case 'PageUp':
+        e.preventDefault();
+        goPrev();
+        break;
+
+      case 'Home':
+        e.preventDefault();
+        showSlide(0);
+        break;
+
+      case 'End':
+        e.preventDefault();
+        showSlide(totalSlides - 1);
+        break;
+
+      case 'f':
+      case 'F':
+        toggleFullscreen();
+        break;
+    }
+  });
+
+  // -------------------------------------------------------
+  // 6. FULLSKÄRMSHANTERING
+  // Använder Fullscreen API (med webkit-prefix för Safari).
+  // -------------------------------------------------------
+  function toggleFullscreen() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      /* Aktivera fullskärm */
+      const el = document.documentElement;
+      if (el.requestFullscreen) {
+        el.requestFullscreen();
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();   /* Safari */
+      }
+    } else {
+      /* Lämna fullskärm */
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+  }
+
+  btnFullscreen.addEventListener('click', toggleFullscreen);
+
+  /* Uppdatera fullskärmsknappens ikon beroende på läge */
+  document.addEventListener('fullscreenchange', updateFullscreenIcon);
+  document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+
+  function updateFullscreenIcon() {
+    const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    /* ⛶ = fullskärm-ikon, ✕ = stäng */
+    btnFullscreen.innerHTML = isFS ? '&#x2715;' : '&#x26F6;';
+  }
+
+  // -------------------------------------------------------
+  // 7. TOUCHSTÖD (svepgester på mobil/surfplatta)
+  // -------------------------------------------------------
+  let touchStartX = 0;
+
+  presentation.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+
+  presentation.addEventListener('touchend', function(e) {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    /* Minst 50px svep för att räknas som navigering */
+    if (dx < -50)  goNext();
+    if (dx >  50)  goPrev();
+  }, { passive: true });
+
+  // -------------------------------------------------------
+  // 8. INITIERING — visa första sliden vid sidladdning
+  // -------------------------------------------------------
+  showSlide(0);
+
+</script>
+
+</body>
+</html>
