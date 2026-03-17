@@ -776,6 +776,55 @@
       font-weight: normal;
     }
 
+    /* Årstext bredvid fokusområdets namn — diskret, monospace */
+    .focus-table .fa-year {
+      font-family: 'Courier New', monospace;
+      font-size: clamp(6px, 0.75vw, 9px);
+      color: #aaa;
+      margin-left: 5px;
+      font-weight: normal;
+    }
+
+    /* Årstext för 2027-mål — något tydligare, varm färg */
+    .focus-table .fa-year-2027 {
+      color: #C05A10;
+      font-weight: bold;
+    }
+
+    /* Rad för fokusområden i fokus 2027 — varm bakgrundstoning */
+    .focus-table .row-focus-2027 td {
+      background: rgba(240, 160, 48, 0.10);
+    }
+
+    .focus-table .row-focus-2027 td.hit {
+      background: rgba(240, 160, 48, 0.22);
+    }
+
+    .focus-table .row-focus-2027 td.hit::after {
+      color: #C05A10;
+    }
+
+    .focus-table .row-focus-2027 .col-n {
+      background: rgba(240, 160, 48, 0.18);
+      color: #C05A10;
+    }
+
+    /* Notrad om 2027-sambandet under matrisen */
+    .focus-2027-note {
+      flex-shrink: 0;
+      background: rgba(240, 160, 48, 0.08);
+      border: 0.5px solid rgba(240, 160, 48, 0.4);
+      border-radius: 4px;
+      padding: clamp(3px, 0.5vh, 7px) clamp(8px, 1.2vw, 14px);
+      font-size: clamp(7px, 0.9vw, 11px);
+      color: #7A3800;
+      line-height: 1.4;
+    }
+
+    .focus-2027-note strong {
+      font-family: 'Courier New', monospace;
+    }
+
     /* Fotrad: länk till hållbarhetsrapporten */
     .slide-focus .focus-footer {
       flex-shrink: 0;
@@ -1640,37 +1689,37 @@
             </thead>
             <tbody>
               <tr>
-                <td class="col-name"><span class="fa-num">3</span> Kunskap &amp; lärande</td>
+                <td class="col-name"><span class="fa-num">3</span> Kunskap &amp; lärande<span class="fa-year">i fokus 2024</span></td>
                 <td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td>
                 <td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td>
                 <td class="col-n">11</td>
               </tr>
               <tr>
-                <td class="col-name"><span class="fa-num">7</span> Jämlikhet &amp; jämställdhet</td>
+                <td class="col-name"><span class="fa-num">7</span> Jämlikhet &amp; jämställdhet<span class="fa-year">i fokus 2026</span></td>
                 <td></td><td></td><td class="hit"></td><td></td><td class="hit"></td>
                 <td></td><td></td><td></td><td></td><td></td><td></td>
                 <td class="col-n">2</td>
               </tr>
               <tr>
-                <td class="col-name"><span class="fa-num">8</span> Hållbart samhällsbyggande</td>
+                <td class="col-name"><span class="fa-num">8</span> Hållbart samhällsbyggande<span class="fa-year">i fokus 2025</span></td>
                 <td></td><td></td><td></td><td></td><td></td>
                 <td></td><td></td><td></td><td></td><td></td><td class="hit"></td>
                 <td class="col-n">1</td>
               </tr>
               <tr>
-                <td class="col-name"><span class="fa-num">10</span> Hälsa &amp; välbefinnande</td>
+                <td class="col-name"><span class="fa-num">10</span> Hälsa &amp; välbefinnande<span class="fa-year">i fokus 2025</span></td>
                 <td class="hit"></td><td class="hit"></td><td class="hit"></td><td></td><td class="hit"></td>
                 <td></td><td class="hit"></td><td class="hit"></td><td></td><td></td><td></td>
                 <td class="col-n">6</td>
               </tr>
-              <tr>
-                <td class="col-name"><span class="fa-num">11</span> Trygghet &amp; samhällsgemenskap</td>
+              <tr class="row-focus-2027">
+                <td class="col-name"><span class="fa-num">11</span> Trygghet &amp; samhällsgemenskap<span class="fa-year fa-year-2027">★ i fokus 2027</span></td>
                 <td></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td>
                 <td></td><td class="hit"></td><td class="hit"></td><td></td><td></td><td class="hit"></td>
                 <td class="col-n">7</td>
               </tr>
-              <tr>
-                <td class="col-name"><span class="fa-num">13</span> Hållbar kultur, friluftsliv &amp; turism</td>
+              <tr class="row-focus-2027">
+                <td class="col-name"><span class="fa-num">13</span> Hållbar kultur, friluftsliv &amp; turism<span class="fa-year fa-year-2027">★ i fokus 2027</span></td>
                 <td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td>
                 <td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td>
                 <td class="col-n">11</td>
@@ -1685,9 +1734,14 @@
           </table>
         </div>
 
+        <!-- Notrad: 2027-sambandet -->
+        <div class="focus-2027-note">
+          <strong>★ Notera:</strong> Fokusområde 11 (Trygghet &amp; samhällsgemenskap) och Fokusområde 13 (Hållbar kultur, friluftsliv &amp; turism) är kommunens prioriterade fokusområden år <strong>2027</strong> — samma år som merparten av budgetskrivelsens investeringar planeras genomföras. Förvaltningens investeringar bidrar direkt till de mål kommunen satt i fokus just detta år.
+        </div>
+
         <div class="focus-footer">
           <span class="foot-note">
-            Källa: Budgetskrivelse för investeringar 2027–2031, Simrishamns kommun (2026-03-10). Fokusområden enligt respektive projekts "Vilket fokusområde stödjer projektet?"-avsnitt.
+            Källa: Budgetskrivelse för investeringar 2027–2031, Simrishamns kommun (2026-03-10). Fokusår: Hållbara Simrishamn 2024.
           </span>
           <span>
             Läs mer:
