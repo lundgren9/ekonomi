@@ -698,21 +698,22 @@
       table-layout: fixed;
     }
 
+    /* UPPDATERING: Alla teckenstorlekar i matrisen ökade för bättre läsbarhet på avstånd */
     .focus-table th,
     .focus-table td {
       border: 0.5px solid rgba(0,0,0,0.09);
       text-align: center;
-      padding: clamp(2px, 0.35vh, 4px) 0;
+      padding: clamp(3px, 0.5vh, 6px) 0;
       vertical-align: middle;
-      font-size: clamp(7px, 0.9vw, 11px);
+      font-size: clamp(11px, 1.4vw, 16px);
       overflow: hidden;
     }
 
     /* Kolumnen med fokusområdets namn — vänsterjusterad, bredare */
     .focus-table .col-name {
-      width: 32%;
+      width: 38%;
       text-align: left;
-      padding-left: clamp(4px, 0.6vw, 8px);
+      padding-left: clamp(5px, 0.7vw, 10px);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -733,20 +734,21 @@
       font-weight: bold;
       font-family: 'Courier New', monospace;
       color: #C0392B;
-      font-size: clamp(7px, 0.85vw, 10px);
+      font-size: clamp(9px, 1.1vw, 13px);
     }
 
     .focus-table thead th.col-name {
       color: #888;
-      font-size: clamp(7px, 0.85vw, 10px);
+      font-size: clamp(9px, 1.1vw, 13px);
     }
 
-    /* Fokusområdets nummer — rött, monospace */
+    /* Fokusområdets nummer — rött, monospace, något större än brödtexten */
     .focus-table .fa-num {
       color: #C0392B;
       font-family: 'Courier New', monospace;
       font-weight: bold;
-      margin-right: 3px;
+      font-size: clamp(12px, 1.5vw, 17px);
+      margin-right: 4px;
     }
 
     /* Täckta celler — röd bakgrund med prick */
@@ -757,7 +759,7 @@
     .focus-table td.hit::after {
       content: '●';
       color: #C0392B;
-      font-size: clamp(7px, 0.9vw, 11px);
+      font-size: clamp(11px, 1.4vw, 16px);
     }
 
     /* Totalsumma-rad längst ner */
@@ -766,7 +768,7 @@
       font-weight: bold;
       font-family: 'Courier New', monospace;
       color: #555;
-      font-size: clamp(7px, 0.85vw, 10px);
+      font-size: clamp(9px, 1.1vw, 13px);
     }
 
     .focus-table .row-total .col-name {
@@ -779,9 +781,9 @@
     /* Årstext bredvid fokusområdets namn — diskret, monospace */
     .focus-table .fa-year {
       font-family: 'Courier New', monospace;
-      font-size: clamp(6px, 0.75vw, 9px);
+      font-size: clamp(9px, 1.1vw, 13px);
       color: #aaa;
-      margin-left: 5px;
+      margin-left: 6px;
       font-weight: normal;
     }
 
