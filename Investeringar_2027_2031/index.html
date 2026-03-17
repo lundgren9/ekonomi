@@ -642,6 +642,171 @@
     }
 
     /* -------------------------------------------------------
+       11. FOKUSOMRÅDESMATRIS (ny slide 13)
+       Visar vilka av de 17 hållbarhetsmålen respektive
+       investering (Prio 1–11) bidrar till.
+       ------------------------------------------------------- */
+    .slide-focus {
+      background: #fff;
+    }
+
+    .slide-focus .acc {
+      height: clamp(4px, 0.7vh, 8px);
+      background: linear-gradient(90deg, #C0392B 0%, #E8693A 55%, #F0A030 100%);
+      flex-shrink: 0;
+    }
+
+    .slide-focus .focus-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(7px,1.6vh,18px) clamp(10px,2.2vw,26px) clamp(5px,1.1vh,12px);
+      min-height: 0;
+      gap: clamp(4px, 0.7vh, 9px);
+    }
+
+    .slide-focus .focus-hdr {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .slide-focus h1 {
+      color: #1a1a1a;
+      font-size: clamp(12px, 2vw, 23px);
+      font-weight: normal;
+    }
+
+    .slide-focus .focus-cnt {
+      color: #bbb;
+      font-size: clamp(8px, 1vw, 12px);
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Matrisen — full bredd, fyller återstående höjd */
+    .slide-focus .matrix-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .focus-table {
+      width: 100%;
+      border-collapse: collapse;
+      height: 100%;
+      table-layout: fixed;
+    }
+
+    .focus-table th,
+    .focus-table td {
+      border: 0.5px solid rgba(0,0,0,0.09);
+      text-align: center;
+      padding: clamp(2px, 0.35vh, 4px) 0;
+      vertical-align: middle;
+      font-size: clamp(7px, 0.9vw, 11px);
+      overflow: hidden;
+    }
+
+    /* Kolumnen med fokusområdets namn — vänsterjusterad, bredare */
+    .focus-table .col-name {
+      width: 32%;
+      text-align: left;
+      padding-left: clamp(4px, 0.6vw, 8px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Räknar-kolumn längst till höger */
+    .focus-table .col-n {
+      width: 5%;
+      font-weight: bold;
+      color: #C0392B;
+      font-family: 'Courier New', monospace;
+      background: #F9F7F4;
+    }
+
+    /* Rubrikrad */
+    .focus-table thead th {
+      background: #F9F7F4;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      color: #C0392B;
+      font-size: clamp(7px, 0.85vw, 10px);
+    }
+
+    .focus-table thead th.col-name {
+      color: #888;
+      font-size: clamp(7px, 0.85vw, 10px);
+    }
+
+    /* Fokusområdets nummer — rött, monospace */
+    .focus-table .fa-num {
+      color: #C0392B;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      margin-right: 3px;
+    }
+
+    /* Täckta celler — röd bakgrund med prick */
+    .focus-table td.hit {
+      background: rgba(192,57,43,0.12);
+    }
+
+    .focus-table td.hit::after {
+      content: '●';
+      color: #C0392B;
+      font-size: clamp(7px, 0.9vw, 11px);
+    }
+
+    /* Totalsumma-rad längst ner */
+    .focus-table .row-total td {
+      background: #F9F7F4;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      color: #555;
+      font-size: clamp(7px, 0.85vw, 10px);
+    }
+
+    .focus-table .row-total .col-name {
+      color: #888;
+      font-style: italic;
+      font-family: 'Georgia', serif;
+      font-weight: normal;
+    }
+
+    /* Fotrad: länk till hållbarhetsrapporten */
+    .slide-focus .focus-footer {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: clamp(3px, 0.5vh, 7px);
+      border-top: 0.5px solid rgba(0,0,0,0.07);
+      font-size: clamp(7px, 0.88vw, 11px);
+    }
+
+    .slide-focus .focus-footer a {
+      color: #C0392B;
+      text-decoration: none;
+    }
+
+    .slide-focus .focus-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .slide-focus .focus-footer .foot-note {
+      color: #aaa;
+      font-style: italic;
+    }
+
+    .slide-focus .focus-footer .foot-org {
+      color: #c0c0c0;
+      font-style: italic;
+    }
+
+    /* -------------------------------------------------------
        UTSKRIFTSKNAPP — visas på slide 1 och slide 14.
        Dold vid utskrift. Chip-stil, matchar övriga knappar.
        ------------------------------------------------------- */
@@ -856,7 +1021,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 1</span>
             <span class="status-tag">● Pågående</span>
-            <span class="cnt">Bild 2 av 14</span>
+            <span class="cnt">Bild 2 av 15</span>
           </div>
           <h1>Utrustning uppstart Korsavads&shy;anläggningen</h1>
           <p class="desc">
@@ -911,7 +1076,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 2</span>
             <span class="status-tag ny">● Ny</span>
-            <span class="cnt">Bild 3 av 14</span>
+            <span class="cnt">Bild 3 av 15</span>
           </div>
           <h1>Valfisken inklusive gamingrum</h1>
           <p class="desc">
@@ -966,7 +1131,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 3</span>
             <span class="status-tag">● Pågående</span>
-            <span class="cnt">Bild 4 av 14</span>
+            <span class="cnt">Bild 4 av 15</span>
           </div>
           <h1>Ombyggnad &amp; tillgängliggörande Hafreborg</h1>
           <p class="desc">
@@ -1022,7 +1187,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 4</span>
             <span class="status-tag">● Pågående</span>
-            <span class="cnt">Bild 5 av 14</span>
+            <span class="cnt">Bild 5 av 15</span>
           </div>
           <h1>Tillgängliggörande &amp; digitalisering av magasinet Garvaren</h1>
           <p class="desc">
@@ -1058,7 +1223,8 @@
             <div class="focus-title">Fokusområden</div>
             <div class="chips">
               <span class="chip">3 · Kunskap &amp; lärande</span>
-              <span class="chip">17 · Partnerskap &amp; samverkan</span>
+              <span class="chip">11 · Trygghet &amp; samhällsgemenskap</span>
+              <span class="chip">13 · Hållbar kultur, friluftsliv &amp; turism</span>
             </div>
           </div>
         </div>
@@ -1075,7 +1241,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 5</span>
             <span class="status-tag ny">● Nytt</span>
-            <span class="cnt">Bild 6 av 14</span>
+            <span class="cnt">Bild 6 av 15</span>
           </div>
           <h1>Tillgängligt museum</h1>
           <p class="desc">
@@ -1110,9 +1276,11 @@
           <div class="focus-wrap">
             <div class="focus-title">Fokusområden</div>
             <div class="chips">
-              <span class="chip">2 · Icke-diskriminering</span>
               <span class="chip">3 · Kunskap &amp; lärande</span>
-              <span class="chip">31 · Rätt till kulturliv</span>
+              <span class="chip">7 · Jämlikhet &amp; jämställdhet</span>
+              <span class="chip">10 · Hälsa &amp; välbefinnande</span>
+              <span class="chip">11 · Trygghet &amp; samhällsgemenskap</span>
+              <span class="chip">13 · Hållbar kultur, friluftsliv &amp; turism</span>
             </div>
           </div>
         </div>
@@ -1129,7 +1297,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 6</span>
             <span class="status-tag">● Pågående</span>
-            <span class="cnt">Bild 7 av 14</span>
+            <span class="cnt">Bild 7 av 15</span>
           </div>
           <h1>Digitalisering av bibliotek</h1>
           <p class="desc">
@@ -1165,8 +1333,7 @@
             <div class="focus-title">Fokusområden</div>
             <div class="chips">
               <span class="chip">3 · Kunskap &amp; lärande</span>
-              <span class="chip">10 · Hälsa &amp; välbefinnande</span>
-              <span class="chip">13 · Kultur &amp; turism</span>
+              <span class="chip">13 · Hållbar kultur, friluftsliv &amp; turism</span>
             </div>
           </div>
         </div>
@@ -1183,7 +1350,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 7</span>
             <span class="status-tag ny">● Nytt</span>
-            <span class="cnt">Bild 8 av 14</span>
+            <span class="cnt">Bild 8 av 15</span>
           </div>
           <h1>Nya lokaler Tobisviksbadet</h1>
           <p class="desc">
@@ -1218,8 +1385,10 @@
           <div class="focus-wrap">
             <div class="focus-title">Fokusområden</div>
             <div class="chips">
+              <span class="chip">3 · Kunskap &amp; lärande</span>
               <span class="chip">10 · Hälsa &amp; välbefinnande</span>
-              <span class="chip">13 · Kultur, friluftsliv &amp; turism</span>
+              <span class="chip">11 · Trygghet &amp; samhällsgemenskap</span>
+              <span class="chip">13 · Hållbar kultur, friluftsliv &amp; turism</span>
             </div>
           </div>
         </div>
@@ -1236,7 +1405,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 8</span>
             <span class="status-tag ny">● Nytt</span>
-            <span class="cnt">Bild 9 av 14</span>
+            <span class="cnt">Bild 9 av 15</span>
           </div>
           <h1>Ny konstgräsplan Korsavad</h1>
           <p class="desc">
@@ -1275,7 +1444,8 @@
             <div class="chips">
               <span class="chip">3 · Kunskap &amp; lärande</span>
               <span class="chip">10 · Hälsa &amp; välbefinnande</span>
-              <span class="chip">13 · Kultur, friluftsliv &amp; turism</span>
+              <span class="chip">11 · Trygghet &amp; samhällsgemenskap</span>
+              <span class="chip">13 · Hållbar kultur, friluftsliv &amp; turism</span>
             </div>
           </div>
         </div>
@@ -1292,7 +1462,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 9</span>
             <span class="status-tag">● Pågående</span>
-            <span class="cnt">Bild 10 av 14</span>
+            <span class="cnt">Bild 10 av 15</span>
           </div>
           <h1>Konstnärlig utsmyckning</h1>
           <p class="desc">
@@ -1327,9 +1497,8 @@
           <div class="focus-wrap">
             <div class="focus-title">Fokusområden</div>
             <div class="chips">
-              <span class="chip">7 · Jämlikhet &amp; jämställdhet</span>
-              <span class="chip">10 · Hälsa &amp; välbefinnande</span>
-              <span class="chip">13 · Hållbar kultur &amp; turism</span>
+              <span class="chip">3 · Kunskap &amp; lärande</span>
+              <span class="chip">13 · Hållbar kultur, friluftsliv &amp; turism</span>
             </div>
           </div>
         </div>
@@ -1346,7 +1515,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 10</span>
             <span class="status-tag">● Pågående</span>
-            <span class="cnt">Bild 11 av 14</span>
+            <span class="cnt">Bild 11 av 15</span>
           </div>
           <h1>Konstinköp till kommunens konstsamling</h1>
           <p class="desc">
@@ -1381,9 +1550,8 @@
           <div class="focus-wrap">
             <div class="focus-title">Fokusområden</div>
             <div class="chips">
-              <span class="chip">7 · Jämlikhet &amp; jämställdhet</span>
-              <span class="chip">10 · Hälsa &amp; välbefinnande</span>
-              <span class="chip">13 · Hållbar kultur &amp; turism</span>
+              <span class="chip">3 · Kunskap &amp; lärande</span>
+              <span class="chip">13 · Hållbar kultur, friluftsliv &amp; turism</span>
             </div>
           </div>
         </div>
@@ -1400,7 +1568,7 @@
           <div class="meta">
             <span class="prio">PRIORITET 11</span>
             <span class="status-tag ny">● Ny</span>
-            <span class="cnt">Bild 12 av 14</span>
+            <span class="cnt">Bild 12 av 15</span>
           </div>
           <h1>Uppgradera verkstaden på Garvaren</h1>
           <p class="desc">
@@ -1446,14 +1614,102 @@
     </div>
 
     <!-- ======================================================
-         SLIDE 13 — SAMMANFATTNING PLANPERIOD 2028–2031
+         SLIDE 13 — FOKUSOMRÅDESMATRIS
+         Visar vilka av Simrishamns 17 hållbarhetsmål (fokusområden)
+         som respektive investering (Prioritet 1–11) bidrar till.
+         Källa: Hållbara Simrishamn 2024 (hållbarhetsrapport).
     ====================================================== -->
-    <div class="slide slide-summary" data-slide="13">
+    <div class="slide slide-focus" data-slide="13">
+      <div class="acc"></div>
+      <div class="focus-body">
+
+        <div class="focus-hdr">
+          <h1>Investeringarnas bidrag till hållbarhetsmålen — fokusområden</h1>
+          <span class="focus-cnt">Bild 13 av 15</span>
+        </div>
+
+        <div class="matrix-wrap">
+          <table class="focus-table">
+            <thead>
+              <tr>
+                <th class="col-name">Fokusområde (av 17)</th>
+                <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
+                <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th><th>P11</th>
+                <th class="col-n">n</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="col-name"><span class="fa-num">3</span> Kunskap &amp; lärande</td>
+                <td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td>
+                <td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td>
+                <td class="col-n">11</td>
+              </tr>
+              <tr>
+                <td class="col-name"><span class="fa-num">7</span> Jämlikhet &amp; jämställdhet</td>
+                <td></td><td></td><td class="hit"></td><td></td><td class="hit"></td>
+                <td></td><td></td><td></td><td></td><td></td><td></td>
+                <td class="col-n">2</td>
+              </tr>
+              <tr>
+                <td class="col-name"><span class="fa-num">8</span> Hållbart samhällsbyggande</td>
+                <td></td><td></td><td></td><td></td><td></td>
+                <td></td><td></td><td></td><td></td><td></td><td class="hit"></td>
+                <td class="col-n">1</td>
+              </tr>
+              <tr>
+                <td class="col-name"><span class="fa-num">10</span> Hälsa &amp; välbefinnande</td>
+                <td class="hit"></td><td class="hit"></td><td class="hit"></td><td></td><td class="hit"></td>
+                <td></td><td class="hit"></td><td class="hit"></td><td></td><td></td><td></td>
+                <td class="col-n">6</td>
+              </tr>
+              <tr>
+                <td class="col-name"><span class="fa-num">11</span> Trygghet &amp; samhällsgemenskap</td>
+                <td></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td>
+                <td></td><td class="hit"></td><td class="hit"></td><td></td><td></td><td class="hit"></td>
+                <td class="col-n">7</td>
+              </tr>
+              <tr>
+                <td class="col-name"><span class="fa-num">13</span> Hållbar kultur, friluftsliv &amp; turism</td>
+                <td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td>
+                <td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td><td class="hit"></td>
+                <td class="col-n">11</td>
+              </tr>
+              <tr class="row-total">
+                <td class="col-name">Antal fokusomr. per investering</td>
+                <td>3</td><td>4</td><td>5</td><td>3</td><td>5</td>
+                <td>2</td><td>4</td><td>4</td><td>2</td><td>2</td><td>4</td>
+                <td class="col-n">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="focus-footer">
+          <span class="foot-note">
+            Källa: Budgetskrivelse för investeringar 2027–2031, Simrishamns kommun (2026-03-10). Fokusområden enligt respektive projekts "Vilket fokusområde stödjer projektet?"-avsnitt.
+          </span>
+          <span>
+            Läs mer:
+            <a href="https://www.simrishamn.se/download/18.62f44a1c1961dfe23704b3bc/1745320286334/H%C3%A5llbara%20Simrishamn%202024.pdf"
+               target="_blank" rel="noopener">
+              Hållbara Simrishamn 2024 — hållbarhetsrapport (simrishamn.se)
+            </a>
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================================
+         SLIDE 14 — SAMMANFATTNING PLANPERIOD 2028–2031
+    ====================================================== -->
+    <div class="slide slide-summary" data-slide="14">
       <div class="acc"></div>
       <div class="s-body">
         <div class="s-header">
           <h1>Planperiod 2028–2031 — Kommande investeringar (prioritet 12–20)</h1>
-          <span class="s-cnt">Bild 13 av 14</span>
+          <span class="s-cnt">Bild 14 av 15</span>
         </div>
         <div class="grid">
           <div class="inv-card">
