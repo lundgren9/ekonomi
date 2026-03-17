@@ -289,6 +289,37 @@
     }
 
     /* -------------------------------------------------------
+       "Se även"-länk på slide 1 — samma stil som meta-chips
+       men något diskretare (lägre opacitet, lite mindre text).
+       UPPDATERING: Omgjord från röd accentstil till chip-stil.
+       ------------------------------------------------------- */
+    .slide-title .related-link-wrap {
+      margin-top: clamp(8px, 1.4vh, 18px);
+      display: flex;
+      justify-content: center;
+    }
+
+    .slide-title .related-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+      text-decoration: none;
+      background: rgba(0,0,0,0.04);
+      border: 0.5px solid rgba(0,0,0,0.12);
+      color: rgba(0,0,0,0.45);
+      font-size: clamp(9px, 1.2vw, 14px);
+      padding: clamp(3px, 0.5vh, 7px) clamp(10px, 1.5vw, 18px);
+      border-radius: 4px;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .slide-title .related-link:hover {
+      background: rgba(0,0,0,0.08);
+      color: rgba(0,0,0,0.7);
+      border-color: rgba(0,0,0,0.25);
+    }
+
+    /* -------------------------------------------------------
        9. INVESTERINGSSLIDE — VARIANT C1
        Röd accentlinje top, sedan två kolumner:
          Vänster: prioritet, rubrik, beskrivning
@@ -636,13 +667,23 @@
       <h1>Budgetskrivelse<br>för investeringar<br>2027–2031</h1>
       <div class="subtitle">
         Prioriterade investeringsprojekt för Kultur- och fritidsnämnden<br>
-        Beslutad ordning · Budget år 2027 och planperiod 2028–2031
+        Ordning · Budget år 2027 och planperiod 2028–2031
       </div>
       <div class="meta-row">
         <span class="meta-chip">11+1 investeringsprojekt</span>
         <span class="meta-chip">37 525 tkr budget 2027</span>
         <span class="meta-chip">71 975 tkr totalt 2027–2031</span>
         <span class="meta-chip">Daterad 2026-03-10</span>
+      </div>
+
+      <!-- Länk till relaterad analys: Finansiellt utrymme 2027–2031 -->
+      <div class="related-link-wrap">
+        <a class="related-link"
+           href="https://lundgren9.github.io/ekonomi/Balanskrav/index.html"
+           target="_blank"
+           rel="noopener">
+          Se även: Finansiellt utrymme 2027–2031 →
+        </a>
       </div>
     </div>
 
@@ -1379,7 +1420,7 @@
 
   <!-- Diskret källkodslänk nere till vänster — länk tillbaka till GitHub-repot -->
   <a id="repo-link"
-     href="https://github.com/lundgren9/ekonomi/tree/main/Investeringar_2027_2031"
+     href="https://github.com/lundgren9/ekonomi/tree/main"
      target="_blank"
      rel="noopener"
      title="Källkod &amp; README på GitHub">
